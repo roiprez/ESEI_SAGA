@@ -8,24 +8,13 @@ size(10).
 
 actual(player1).
 
-valido(X1,Y1,X2,Y2):-
-	not mismapos(X1,Y1,X2,Y2) &
-	not fueratablero(X1,Y1,X2,Y2).
+valido(P1,P2,Dir):-
+	not fueraTablero(P1,P2,Dir).
 
-mismapos(X,Y,X,Y).
-
-fueratablero(X1,Y1,X2,Y2):-
-	negativo(X1) | negativo(X2).
-
-fueratablero(X1,Y1,X2,Y2):-
-	negativo(Y1).
-
-fueratablero(X1,Y1,X2,Y2):-
-	negativo(Y2).
-
-fueratablero(X1,Y1,X2,Y2):-
+fueraTablero(P1,P2,Dir):-
 	size(N) &
-	(X1 >= N | X2 >= N | Y1 >= N | Y2 >= N).
+	((Dir == "up" & P2+1 >= N) | (Dir == "right" & P1+1 >= N) | 
+	(Dir == "left" & negativo(P1-1)) | (Dir == "down" & negativo(P2-1))).
 
 negativo(X):- X < 0.
 
@@ -38,13 +27,14 @@ negativo(X):- X < 0.
 +!startGame : actual(Player) & contador(N) & N>0 <-
 	-+contador(N-1);
 	.print(N);
-	.send(Player,tell,puedesmover);
-	.send(Player,untell,puedesmover).
+	.send(Player,tell,puedesMover);
+	.send(Player,untell,puedesMover).
 
-+mueve(F,pos(X1,Y1),pos(X2,Y2))[source(A)] : actual(A) & valido(X1,Y1,X2,Y2) <- 
-	-mueve(F,pos(X1,Y1),pos(X2,Y2))[source(A)];
 	
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & valido(P1,P2,Dir) <- 
+	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];
 	.print("Acabo de verificar el movimiento jugador: ",A);
+	.print("Jugador: ", A, " Ficha: " ,P1,", ",P2," en dirección ", Dir);
 	.send(A,tell,valido);
 	if (A = player1) 
 		{-+actual(player2);} 
@@ -52,29 +42,23 @@ negativo(X):- X < 0.
 		{-+actual(player1);};
 	.send(A,untell,valido);
 	!startGame.
-	
-	
-+mueve(F,pos(X1,Y1),pos(X2,Y2))[source(A)] : actual(A) & mismapos(X1,Y1,X2,Y2) <-
-	-mueve(F,pos(X1,Y1),pos(X2,Y2))[source(A)];
-	.print("Jugador: ", A, " Acabo de comprobar que es la misma posicion");
-	.send(A,tell,invalido(mismapos));
-	.send(A,untell,invalido(mismapos)).
 
-+mueve(F,pos(X1,Y1),pos(X2,Y2))[source(A)] : actual(A) & fueratablero(X1,Y1,X2,Y2) <-
-	-mueve(F,pos(X1,Y1),pos(X2,Y2))[source(A)];
-	.print("Jugador: ", A, " Acabo de comprobar que hay una posici?n fuera del tablero");
-	.send(A,tell,invalido(fueratablero));
-	.send(A,untell,invalido(fueratablero)).
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & fueraTablero(P1,P2,Dir) <-
+	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];
+	.print("Jugador: ", A, " Acabo de comprobar que hay una posición fuera del tablero");
+	.print("Jugador: ", A, " Ficha: " ,P1,", ",P2," en dirección ", Dir);
+	.send(A,tell,invalido(fueraTablero));
+	.send(A,untell,invalido(fueraTablero)).
 
-+mueve(F,P1,P2)[source(A)] : not actual (A)<-
-	-mueve(F,P1,P2)[source(A)];
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : not actual (A)<-
+	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];
 	.print("Movimiento no experado del jugador: ",A).
 
-+mueve(F,P1,P2)[source(A)] : actual (A)<-
-	-mueve(F,P1,P2)[source(A)];
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual (A)<-
+	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];
 	.print("Movimiento no controlado del jugador: ",A).
 	
-+mueve(F,P1,P2)<-
-	-mueve(F,P1,P2);
++moverDesdeEnDireccion(pos(P1,P2),Dir) <-
+	-moverDesdeEnDireccion(pos(P1,P2),Dir);
 	.print("Movimiento indeterminado").
 					

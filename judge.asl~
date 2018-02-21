@@ -36,6 +36,8 @@ negativo(X):- X < 0.
 /* Plans */
 
 +!startGame : actual(Player) & contador(N) & N>0 <-
+	-+contador(N-1);
+	.print(N);
 	.send(Player,tell,puedesmover);
 	.send(Player,untell,puedesmover).
 

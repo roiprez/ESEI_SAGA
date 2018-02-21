@@ -43,6 +43,11 @@ invalidoC(pos(2,3),pos(2,3)).
 	-invalidoA(P1,P2);
 	.send(judge,tell,mueve(ficha,P1,P2)).
 	
++invalido(mismapos)[source(judge)] : valido(P1,P2) <-
+	.print("Acabo de recibir del juez que he intentado mover la misma ficha, por segunda vez");
+	-valido(P1,P2);
+	.send(judge,tell,mueve(ficha,P1,P2)).
+	
 +invalido(mismapos)[source(judge)].
 
 +invalido(fueratablero)[source(judge)] : invalidoB(P1,P2) <-
@@ -54,7 +59,7 @@ invalidoC(pos(2,3),pos(2,3)).
 +invalido(fueratablero)[source(judge)] : valido(P1,P2) <-
 	//-invalido(fueratablero);
 	.print("Acabo de recibir del juez que he intentado mover fuera del tablero 2 veces");
-	//-valido(P1,P2);
+	-valido(P1,P2);
 	.send(judge,tell,mueve(ficha,P1,P2)).
 	
 +invalido(fueratablero)[source(judge)].
