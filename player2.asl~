@@ -1,39 +1,27 @@
-// Agent player2 in project ESEI_SAGA.mas2j
+// Agent player in project ESEI_SAGA.mas2j
 
 /* Initial beliefs and rules */
-
-valido(pos(X1,Y1),pos(X2,Y2)):-
+	
+valido(X1,Y1,Dir):-
 	.random(X11,10) &
 	.random(Y11,10) &
-	.random(X12,10) &
-	.random(Y12,10) &
-	X1 = math.round(10*X11) &
-	Y1 = math.round(10*Y11) &
-	X2 = math.round(10*X12) &
-	Y2 = math.round(10*Y12).
+	X1 = math.round(9*X11) &
+	Y1 = math.round(9*Y11) &      
+	((X1 == 9 & Dir = "left") | (Y1 == 9 & Dir = "down") | (Dir = "up")) .
 
 /* Initial goals */
 
 /* Plans */
 
-+puedesMover[source(judge)] : valido(P1,P2) <- 
++puedesMover[source(judge)] : valido(P1,P2, Dir) <- 
 	.print("Acabo de recibir del juez el testigo de mover");
 	-valido(P1,P2);	
-	//.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
-	.send(judge,tell,mueve(ficha,P1,P2)).
-	
-+invalido(mismapos)[source(judge)] : valido(P1,P2) <-
-	.print("Acabo de recibir del juez que he intentado mover la misma ficha");
-	-valido(P1,P2);
-	.send(judge,tell,mueve(ficha,P1,P2)).
-	
-+invalido(mismapos)[source(judge)].
+	.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
 
-+invalido(fueraTablero)[source(judge)] : valido(P1,P2) <-
-	//-invalido(fueratablero);
++invalido(fueraTablero)[source(judge)] : valido(P1,P2, Dir) <-
 	.print("Acabo de recibir del juez que he intentado mover fuera del tablero 1 vez");
 	-valido(P1,P2);
-	.send(judge,tell,mueve(ficha,P1,P2)).
+	.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
 	
 +invalido(fueraTablero)[source(judge)].
 
