@@ -119,14 +119,24 @@ contador(100).
 
 size(10).
 
+plNumb(A,PlNumb):-
+	(A == player1 & PlNumb = 1) | (A == player2 & PlNumb = 2).
+
+nextMove(P1,P2,NX,NY,Dir):-
+	(
+	(Dir == "up" & NX = P1 & NY= (P2 + 1)) |
+	(Dir == "down" & NX = P1 & NY = (P2 - 1)) |
+	(Dir == "right" & NX = (P1 + 1) & NY = P2) |
+	(Dir == "left" & NX = (P1 - 1) & NY = P2) 
+	).
+
 actual(player1).
 
 valido(P1,P2,Dir):-
 	not fueraTablero(P1,P2,Dir).
 
 fueraTablero(P1,P2,Dir):-
-	size(N) &
-	((Dir == "up" & P2+1 >= N) | (Dir == "right" & P1+1 >= N) | 
+	size(N) & ((Dir == "up" & P2 == N-1)| (Dir == "right" & (P1+1) == N) | 
 	(Dir == "left" & negativo(P1-1)) | (Dir == "down" & negativo(P2-1))).
 
 negativo(X):- X < 0.
@@ -141,6 +151,7 @@ negativo(X):- X < 0.
 	-+contador(N-1);
 	.print(N);
 	.findall(estructura(X,Y),estructura(X,Y),Lista);
+	
 	for ( .member(Estructure,Lista) ) {
         .send(Player,tell,Estructure);
      };
@@ -151,45 +162,28 @@ negativo(X):- X < 0.
 	.send(Player,untell,puedesMover).   
 
 	
-+moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : estructura(X,celda(P1,P2,Own)) & actual(A) & valido(P1,P2,Dir) <- 
-	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];
-    .print(estructura(X,celda(P1,P2,Own)));  
-                                             
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & nextMove(P1,P2,NX,NY,Dir) & plNumb(A,PlNumb) & valido(P1,P2,Dir) & estructura(X,celda(J,K,Own))  <- 
+	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];  
+
 	.print("Acabo de verificar el movimiento jugador: ",A);
 	.print("Jugador: ", A, " Ficha: " ,P1,", ",P2," en direccion ", Dir);
 	.send(A,tell,valido);
-	if (P1 == 1 & P2 == 1) 
-		{
-		.print(X, " " ,Dir);
-		}
+	
 	if (A = player1) 
 		{
 		-+actual(player2);
-		-estructura(X,celda(P1,P2,Own));
-		+estructura(X,celda(P1,P2,1));
-		if(Dir == "up"){
-			-estructura(X,celda(P1,P2,1));
-			+estructura(X,celda(P1,P2+1,1));
-		/*	-estructura(Y,celda(P1,P2+1,Own2));
-			+estructura(Y,celda(P1,P2,Own2));*/
-		};
-		}                          
+		}                        
 	else 
 		{
-		-+actual(player1);
-		-estructura(X,celda(P1,P2,Own));
-		+estructura(X,celda(P1,P2,2));
-		if(Dir == "up"){
-			-estructura(X,celda(P1,P2,2));
-			+estructura(X,celda(P1,P2+1,2));
-			/*-estructura(Y,celda(P1,P2+1,Own2));
-			+estructura(Y,celda(P1,P2,Own2));*/
+		-+actual(player1);		
 		};
-		};
-	if (P1 == 1 & P2 == 1) 
-		{
-		.print(X);
-		}
+		
+	.print(estructura(X1,celda(P1,P2,Own1)));
+	.print(estructura(X2,celda(NX,NY,Own2)));	
+	-estructura(X1,celda(P1,P2,Own1));                         
+	-estructura(X2,celda(NX,NY,Own2));
+	+estructura(X1,celda(NX,NY,PlNumb));		
+	+estructura(X2,celda(P1,P2,PlNumb));
 	.send(A,untell,valido);
 	!startGame.                 
 
