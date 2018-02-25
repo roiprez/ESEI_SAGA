@@ -125,8 +125,7 @@ valido(P1,P2,Dir):-
 	not fueraTablero(P1,P2,Dir).
 
 fueraTablero(P1,P2,Dir):-
-	size(N) &
-	((Dir == "up" & P2+1 >= N) | (Dir == "right" & P1+1 >= N) | 
+	size(N) & ((Dir == "up" & P2 == N-1)| (Dir == "right" & (P1+1) == N) | 
 	(Dir == "left" & negativo(P1-1)) | (Dir == "down" & negativo(P2-1))).
 
 negativo(X):- X < 0.
@@ -151,17 +150,48 @@ negativo(X):- X < 0.
 	.send(Player,untell,puedesMover).   
 
 	
-+moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & valido(P1,P2,Dir) <- 
-	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & valido(P1,P2,Dir) & estructura(X,celda(J,K,Own))  <- 
+	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];                                            
 	.print("Acabo de verificar el movimiento jugador: ",A);
 	.print("Jugador: ", A, " Ficha: " ,P1,", ",P2," en direccion ", Dir);
 	.send(A,tell,valido);
+	if (P1 == 1 & P2 == 1) 
+		{
+		.print(X, " " ,Dir);
+		};
 	if (A = player1) 
-		{-+actual(player2);} 
+		{
+		-+actual(player2);
+		if(Dir == "up"){
+			.print(estructura(X1,celda(P1,P2,Own1)));
+			.print(estructura(X2,celda(P1,P2+1,Own2)));
+			-estructura(X1,celda(P1,P2,Own1));
+			-estructura(X2,celda(P1,P2+1,Own2));
+			+estructura(X1,celda(P1,P2+1,1));		
+			+estructura(X2,celda(P1,P2,1));
+			.print(estructura(X1,celda(P1,P2,Own1)));
+			.print(estructura(X2,celda(P1,P2+1,Own2)));		
+		};
+		}                        
 	else 
-		{-+actual(player1);};
+		{
+		-+actual(player1);
+
+		if(Dir == "up"){
+			.print(estructura(X1,celda(P1,P2,Own1)));
+			.print(estructura(X2,celda(P1,P2+1,Own2)));
+			-estructura(X1,celda(P1,P2,Own1));
+			-estructura(X2,celda(P1,P2+1,Own2));
+			+estructura(X1,celda(P1,P2+1,2));		
+			+estructura(X2,celda(P1,P2,2));
+			.print(estructura(X1,celda(P1,P2,Own1)));
+			.print(estructura(X2,celda(P1,P2+1,Own2)));
+		
+		};
+		
+		};
 	.send(A,untell,valido);
-	!startGame.
+	!startGame.                 
 
 +moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & fueraTablero(P1,P2,Dir) <-
 	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];

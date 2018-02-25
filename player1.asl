@@ -9,17 +9,17 @@ valido(X1,Y1,Dir):-
 	X1 = math.round(9*X11) &
 	Y1 = math.round(9*Y11) &   
 	(
-	estructura(ficha(V1,W1),celda(X1,Y1,0)) &
-	estructura(ficha(V2,W2),celda(X1,Y1+1,0)) &
+	estructura(ficha(V1,W1),celda(X1,Y1,Own)) &
+	estructura(ficha(V2,W2),celda(X1,Y1+1,Own)) &
 	((not(V1 == V2 & W1 == W2) & Dir = "up")) | 
-	estructura(ficha(V1,W1),celda(X1,Y1,0)) &
-	estructura(ficha(V2,W2),celda(X1,Y1-1,0)) &
+	estructura(ficha(V1,W1),celda(X1,Y1,Own)) &
+	estructura(ficha(V2,W2),celda(X1,Y1-1,Own)) &
 	((not(V1 == V2 & W1 == W2) & Dir = "down")) | 
-	estructura(ficha(V1,W1),celda(X1,Y1,0)) &
-	estructura(ficha(V2,W2),celda(X1+1,Y1,0)) &
+	estructura(ficha(V1,W1),celda(X1,Y1,Own)) &
+	estructura(ficha(V2,W2),celda(X1+1,Y1,Own)) &
 	((not(V1 == V2 & W1 == W2) & Dir = "left")) | 
-	estructura(ficha(V1,W1),celda(X1,Y1,0)) &
-	estructura(ficha(V2,W2),celda(X1-1,Y1,0)) &
+	estructura(ficha(V1,W1),celda(X1,Y1,Own)) &
+	estructura(ficha(V2,W2),celda(X1-1,Y1,Own)) &
 	((not(V1 == V2 & W1 == W2) & Dir = "right"))
 	).
 
