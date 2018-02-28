@@ -106,14 +106,6 @@ nextMove(P1,P2,NX,NY,Dir):-
 		 };
 		 .send(P,tell,size(N)).
 		 
-
-
-		 
-		 
-+eliminarTablero(P) <- for ( .member(Estructure,Lista) ) { //--- TODO ---Es necesario eliminarle todo el tablero o solo comunicarle las fichas cambiadas??
-			.send(P,untell,Estructure);
-		 }.		 
-		 
 		 
 //Comienzo del turno
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
@@ -214,7 +206,10 @@ nextMove(P1,P2,NX,NY,Dir):-
 												.send(P,tell,invalido(fueraTurno,N+1));
 												.send(P,untell,invalido(fueraTurno,N+1));
 												-fueraTurno(P,N);
-												+fueraTurno(P,N+1).												
+												+fueraTurno(P,N+1).
++moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
+												.print("Un jugador externo está intentando jugar: ", P).
+												
 +fueraTurno(P,N) : N>3 <- 
 					-jugadorDescalificado(P,0);
 					+jugadorDescalificado(P,1);
@@ -251,6 +246,6 @@ nextMove(P1,P2,NX,NY,Dir):-
 						+cambioTurno(P);
 						!startGame.
 
-
++Default[source(A)]: not A=self  <- .print("Esta respuesta no está contemplada por el agente"). // --- DEBUG --- 
 
 

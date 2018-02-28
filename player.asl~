@@ -16,10 +16,11 @@ pensarJugada(X1,Y1,Dir):-
 	(tablero(celda(X1-1,Y1,_),ficha(Color2,_)) &
 	(Color1 \== Color2 & Dir = "left")) | 
 	(tablero(celda(X1+1,Y1,_),ficha(Color2,_)) &
-	(Color1 \== Color2 & Dir = "right")) | Dir = "up")
+	(Color1 \== Color2 & Dir = "right")))
 	).
 
 /* Initial goals */
+
 
 /* Plans */
 

@@ -1,10 +1,11 @@
 /* Jason Project */
 
-/*
-* Falta por implementar el contador para el número de veces que se hace un movimiento inválido
-* Si se agotan las posibilidades de movimiento para el player el código para
-*/
-
+//Mejorar los prints
+//Crear aleatoriamente el tipo de ficha
+//Crear agente badPLayer
+//Controlar turno del jugador
+//Redactar la memoria
+//Añadir comentarios al código por bloque de regla y plan
 MAS eSEI_SAGA {
 
 
@@ -21,5 +22,21 @@ MAS eSEI_SAGA {
         player2 ./player.asl;
 
 }
+
+//Agentes: judge, player1, player2
+//Tamaño NxN: size(N)
+//ficha(Color,Tipo). Color{0,1,2,3,4,5}, Tipo{in, ip, ct, gs, co}
+//Intercambio de ficha con alguna adyacente
+//celda(X,Y,Own). X,Y{0,N-1}, own{0,1,2}
+//Objetivo de judge: Controlar el intercambio de fichas en el tablero
+//judge autoriza movimiento al jugador que tiene el turno con "puedesMover"
+//players mensaje de movimiento "moverDesdeEnDireccion(pos(X,Y),Dir)" Dir{up,down,left,right}
+//judge validar movimiento: "valido", "invalido(Tipo,Veces)", Tipo{fueraTablero, fuera turno} Veces{1,2,3}
+//Eliminar jugador cuando fueraTurno>3
+//player tiene que pasar turno cuando fueraTablero>3. Reiniciar contador de jugador
+//Movimiento entre dos fichas del mismo color, entonces el juez solicita nuevo movimiento con tryAgain. No hay penalización.
+//Objetivo de player: Localizar y solicitar intercambio de contenido de dos celdas contiguas con fichas de colores diferentes respetando el turno de juego
+//Cubrir todas las situaciones de juego posibles
+//Fin de la partida tras N movimientos válidos. N{100,101}
 
 
