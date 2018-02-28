@@ -6,9 +6,12 @@ contador(100).
 
 size(10).
 
+//Devuelve el entero que corresponde al dueño de la jugada
 plNumb(A,PlNumb):-
 	(A == player1 & PlNumb = 1) | (A == player2 & PlNumb = 2).
 
+//Devuelve las coordenadas NX,NY del siguiente movimiento a realizar en función 
+//de las coordenadas de la ficha a mover y la dirección
 nextMove(P1,P2,NX,NY,Dir):-
 	(
 	(Dir == "up" & NX = P1 & NY= (P2 + 1)) |
@@ -35,20 +38,24 @@ negativo(X):- X < 0.
 /* Plans */
 
 +!startGame : actual(Player) & contador(N) & size(Size) & N>=0 <-
+	//Creamos el tablero cuando se inicia la partida
 	if(N == 100){
 		for ( .range(I,0,(Size-1)) ) {
 			for ( .range(J,0,(Size-1)) ) {
 				.random(Color,10); 
-				+estructura(ficha(math.round(5*Color),in),celda(I,J,0));
+				+tablero(ficha(math.round(5*Color),in),celda(I,J,0));
 			};
 		 };
 		 -+contador(N-1);
 		 !startGame;
+	 /* Si el tablero ya está  creado buscamos todas las creencias de tipo tablero
+	 * y las vamos introduciendo en una lista que luego recorremos para enviar al jugador,
+	 * el jugador entonces recibe la orden de mover, y una vez lo hace se le retiran las creencias 
+	 * que tenía del tablero */
 	} else {
 		-+contador(N-1);
-		.print(N);
-		.findall(estructura(X,Y),estructura(X,Y),Lista);
-		
+		.print("Turnos restantes: ", N);
+		.findall(tablero(X,Y),tablero(X,Y),Lista);		
 		for ( .member(Estructure,Lista) ) {
 			.send(Player,tell,Estructure);
 		 };
@@ -57,10 +64,9 @@ negativo(X):- X < 0.
 			.send(Player,untell,Estructure);
 		 };
 		.send(Player,untell,puedesMover);
-
 	}.
 	
-+moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & nextMove(P1,P2,NX,NY,Dir) & plNumb(A,PlNumb) & valido(P1,P2,Dir) & estructura(X,celda(J,K,Own))  <- 
++moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)] : actual(A) & nextMove(P1,P2,NX,NY,Dir) & plNumb(A,PlNumb) & valido(P1,P2,Dir) & tablero(X,celda(J,K,Own))  <- 
 	-moverDesdeEnDireccion(pos(P1,P2),Dir)[source(A)];  
 
 	.print("Acabo de verificar el movimiento jugador: ",A);
@@ -76,12 +82,12 @@ negativo(X):- X < 0.
 		-+actual(player1);		
 		};
 		
-	.print(estructura(X1,celda(P1,P2,Own1)));
-	.print(estructura(X2,celda(NX,NY,Own2)));	
-	-estructura(X1,celda(P1,P2,Own1));                         
-	-estructura(X2,celda(NX,NY,Own2));
-	+estructura(X1,celda(NX,NY,PlNumb));		
-	+estructura(X2,celda(P1,P2,PlNumb));
+	.print(tablero(X1,celda(P1,P2,Own1)));
+	.print(tablero(X2,celda(NX,NY,Own2)));	
+	-tablero(X1,celda(P1,P2,Own1));                         
+	-tablero(X2,celda(NX,NY,Own2));
+	+tablero(X1,celda(NX,NY,PlNumb));		
+	+tablero(X2,celda(P1,P2,PlNumb));
 	.send(A,untell,valido);
 	!startGame.                 
 

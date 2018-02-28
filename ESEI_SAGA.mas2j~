@@ -1,9 +1,7 @@
 /* Jason Project */
 
 /*
-* Falta por implementar que el tablero se actualice cada vez que se hace un movimiento(Para todos los tipos de movimiento - up)
 * Falta por implementar el contador para el número de veces que se hace un movimiento inválido
-* Error, guarda el previo a cambiar de dueño y el posterior también
 * Si se agotan las posibilidades de movimiento para el player el código para
 */
 
@@ -19,9 +17,8 @@ MAS eSEI_SAGA {
 
         judge;
 
-        player1;
-
-        player2;
+        player1 ./player1.asl;
+        player2 ./player1.asl;
 
 }
 

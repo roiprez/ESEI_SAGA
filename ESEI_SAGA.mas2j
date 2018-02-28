@@ -17,9 +17,8 @@ MAS eSEI_SAGA {
 
         judge;
 
-        player1;
-
-        player2;
+        player1 ./player.asl;
+        player2 ./player.asl;
 
 }
 
