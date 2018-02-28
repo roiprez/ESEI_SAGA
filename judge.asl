@@ -1,5 +1,7 @@
 // Agent judge in project SI_2.mas2j
 
+// modif juez
+
 /* ----- Initial beliefs and rules ------ */ 
 
 size(20).

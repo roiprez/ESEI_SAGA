@@ -8,11 +8,7 @@
 //Añadir comentarios al código por bloque de regla y plan
 MAS eSEI_SAGA {
 
-
-
     infrastructure: Centralised
-
-
 
     agents:
 
