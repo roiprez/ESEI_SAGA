@@ -1,6 +1,4 @@
-// Agent player in project SI_2.mas2j
-
-
+// Agent player in project ESEI_SAGA.mas2j
 
 //Modificacion de prueba
 

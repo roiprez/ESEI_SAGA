@@ -33,6 +33,8 @@ MAS eSEI_SAGA {
 //Movimiento entre dos fichas del mismo color, entonces el juez solicita nuevo movimiento con tryAgain. No hay penalización.
 //Objetivo de player: Localizar y solicitar intercambio de contenido de dos celdas contiguas con fichas de colores diferentes respetando el turno de juego
 //Cubrir todas las situaciones de juego posibles
-//Fin de la partida tras N movimientos válidos. N{100,101}
+//Fin de la partida tras N movimientos válidos. N{100,10
+        badPlayer;
+1}
 
 

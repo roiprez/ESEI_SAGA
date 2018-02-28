@@ -1,6 +1,4 @@
-// Agent judge in project SI_2.mas2j
-
-// modif juez
+// Agent judge in project ESEI_SAGA.mas2j
 
 /* ----- Initial beliefs and rules ------ */ 
 
