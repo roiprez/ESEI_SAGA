@@ -46,9 +46,10 @@ validacion(X,Y,"left",COrigen) :- tablero(celda(X-1,Y,_),ficha(CDestino,_)) & no
 validacion(X,Y,"right",COrigen) :- tablero(celda(X+1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino). 
 mismoColor(COrigen,CDestino) :- COrigen=CDestino.
 
-
-
-
+//A partir de un número aleatorio Rand, devuelve un tipo de ficha Ficha.
+randomFicha(Rand,Ficha):-
+	(Rand == 0 & Ficha = ip) | (Rand == 1 & Ficha = in) | (Rand == 2 & Ficha = ct) | (Rand == 3 & Ficha = gs)
+	| (Rand == 4 & Ficha = co).
 
 //Devuelve el entero que corresponde al due?o de la jugada  // - * - TODO: Comunicación del tablero a los Jugadores
 plNumb(A,PlNumb):-
@@ -93,13 +94,17 @@ nextMove(P1,P2,NX,NY,Dir):-
 // - * - TODO: Generación automática aleatoria del tablero y fichas.
 //--- Owner y Tipo de ficha
 //--- Generar tipos diferentes
-+generacionTablero : size(N)<- for ( .range(I,0,(N-1)) ) {
++generacionTablero : size(N)<- 
+		for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
-				.random(Color,10); 
-				+tablero(celda(I,J,0),ficha(math.round(5*Color),in));
+				.random(Color,10);
+				.random(Ficha,10);
+				+crearCeldaTablero(I,J,Color,math.round(4*Ficha));
+				-crearCeldaTablero(I,J,Color,math.round(4*Ficha));
 			};
 		 }.
-
++crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <- 
+		+tablero(celda(I,J,0),ficha(math.round(5*Color),TipoFicha)).
 		 
  // - * - TODO: Comunicación del tablero a los Jugadores
 +mostrarTablero(P) : size(N) <- .findall(tablero(X,Y),tablero(X,Y),Lista);		
