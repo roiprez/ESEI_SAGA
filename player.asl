@@ -1,5 +1,9 @@
 // Agent player in project SI_2.mas2j
 
+
+
+//Modificacion de prueba
+
 /* Initial beliefs and rules */
 pensarJugada(X1,Y1,Dir):- 
 	size(N)&
@@ -28,22 +32,22 @@ pensarJugada(X1,Y1,Dir):-
 +puedesMover[source(judge)] <- !realizarJugada.
 
 
-//Realización de la jugada
+//Realizaciï¿½n de la jugada
 +!realizarJugada : pensarJugada(P1,P2,Dir) <- 
 					//.send(judge, tell, moverDesdeEnDireccion(pos(1,1),up)); //DEBUG
 					//.send(judge, untell, moverDesdeEnDireccion(pos(1,1),up)).
-					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir)); // --- TODO --- Decisión de la jugada.
+					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir)); // --- TODO --- Decisiï¿½n de la jugada.
 					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)). 
 					
 //Movimiento realizado correctamente							
-+valido[source(judge)] <-  .print("He realizado una Jugada Válida!").
++valido[source(judge)] <-  .print("He realizado una Jugada Vï¿½lida!").
 							
 //Movimiento realizado entre dos fichas del mismo color
 +tryAgain[source(judge)] <- !realizarJugada. // ---- TODO --- No realizar siempre la misma jugada!!
 
 //Movimiento realizado fuera del tablero
 +invalido(fueraTablero,N)[source(judge)] : N<=3 <- 
-								.print("Fuera de tablero nº ",N);
+								.print("Fuera de tablero nï¿½ ",N);
 								!realizarJugada.
 
 +invalido(fueraTablero,N)[source(judge)] : N>3 <- 
