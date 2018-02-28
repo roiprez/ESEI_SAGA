@@ -2,7 +2,7 @@
 
 //Mejorar los prints
 //Crear aleatoriamente el tipo de ficha  --- HECHO
-//Crear agente badPLayer
+//Crear agente badPLayer ---HECHO
 //Controlar turno del jugador
 //Redactar la memoria
 //Añadir comentarios al código por bloque de regla y plan
@@ -15,7 +15,7 @@ MAS eSEI_SAGA {
         judge;
 
         player1 ./player.asl;
-        player2 ./player.asl;
+        player2 ./badPlayer.asl;
 
 }
 
