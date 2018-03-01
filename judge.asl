@@ -38,11 +38,6 @@ movimiento(X,Y,"right") :- tablero(celda(X+1,Y,_),_).
 
 //Comprobacion de Color
 colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen). 
-validacion(X,Y,"up",COrigen) :- tablero(celda(X,Y-1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
-validacion(X,Y,"down",COrigen) :- tablero(celda(X,Y+1,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
-validacion(X,Y,"left",COrigen) :- tablero(celda(X-1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino).
-validacion(X,Y,"right",COrigen) :- tablero(celda(X+1,Y,_),ficha(CDestino,_)) & not mismoColor(COrigen,CDestino). 
-mismoColor(COrigen,CDestino) :- COrigen=CDestino.
 
 //Parte de la generacion aleatoria del tipo de ficha
 randomFicha(Rand,Ficha):-
@@ -219,7 +214,7 @@ nextMove(P1,P2,NX,NY,Dir):-
 												
 //Deteccion de un agente externo a la partida (distinto a player1 y player 2) que esta intentando jugar.												
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-												.print("El agente ",P," externo a la partida está intentando jugar.").
+												.print("El agente ",P," externo a la partida estÃ¡ intentando jugar.").
 
 												
 												
@@ -254,7 +249,7 @@ nextMove(P1,P2,NX,NY,Dir):-
 						-+fueraTablero(0);
 						.print(P," ha pasado turno");
 						+cambioTurno(P);
-						!startGame.
+						!comienzoTurno.
 
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
