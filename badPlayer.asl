@@ -69,16 +69,9 @@ intentoIrAlMismoColor(X1,Y1,Dir):-
 					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
 					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
 
-//Pudiendo elegir direcciÛn, intenta ir a la de la ficha del mismo color
-//Si no est· rodeada de ninguna ficha del mismo color se mueve hacia arriba por defecto
+//Pudiendo elegir direcci√≥n, intenta ir a la de la ficha del mismo color
+//Si no est√° rodeada de ninguna ficha del mismo color se mueve hacia arriba por defecto
 +!realizarJugada : intentoIrAlMismoColor(P1,P2,Dir) <-
-					-intentoIrAlMismoColor(P1,P2,Dir);
-					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
-					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
-
-//Realizacion de la jugada
-+!realizarJugada : pensarJugada(P1,P2,Dir) <- 
-					.print("Quiero mover desde posicion (",P1,",",P2,") en direccion ",Dir)
 					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
 					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
 
