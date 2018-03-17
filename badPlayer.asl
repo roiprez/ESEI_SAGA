@@ -1,5 +1,4 @@
-// Agent player in project ESEI_SAGA.mas2j
-
+// Agent badPlayer in project ESEI_SAGA.mas2j
 
 /* Initial beliefs and rules */
 pensarJugada(X1,Y1,Dir):-

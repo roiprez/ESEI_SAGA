@@ -4,13 +4,15 @@ MAS eSEI_SAGA {
 
     infrastructure: Centralised
 
+    environment: Tablero
+
     agents:
 
         judge;
 
         player1 ./player.asl;
-        //player2 ./player.asl;
-		player2 ./badPlayer.asl; //Jugador que realiza una serie de jugadas inválidas.
+        player2 ./player.asl;
+		//player2 ./badPlayer.asl; //Jugador que realiza una serie de jugadas inválidas.
 }
 
 

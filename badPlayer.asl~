@@ -48,10 +48,10 @@ intentoIrAlMismoColor(X1,Y1,Dir):-
 /* Initial goals */
 
 //Intenta jugar en cuanto empieza la partida y el juez deniega ese primer movimiento
-//!realizarJugada.
-
+!realizarJugada.
 
 /* Plans */
+
 
 //Comienzo del turno
 +puedesMover[source(judge)] <- !realizarJugada.
@@ -69,34 +69,35 @@ intentoIrAlMismoColor(X1,Y1,Dir):-
 					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
 					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
 
-//Pudiendo elegir dirección, intenta ir a la de la ficha del mismo color
-//Si no está rodeada de ninguna ficha del mismo color se mueve hacia arriba por defecto
+//Pudiendo elegir direcciÃ³n, intenta ir a la de la ficha del mismo color
+//Si no estÃ¡ rodeada de ninguna ficha del mismo color se mueve hacia arriba por defecto
 +!realizarJugada : intentoIrAlMismoColor(P1,P2,Dir) <-
-					-intentoIrAlMismoColor(P1,P2,Dir);
 					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
 					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
 
-//Realizacion de la jugada valida
-+!realizarJugada : pensarJugada(P1,P2,Dir) <-
-					.send(judge,tell,moverDesdeEnDireccion(pos(P1,P2),Dir));
-					.send(judge,untell,moverDesdeEnDireccion(pos(P1,P2),Dir)).
-
-//Movimiento realizado correctamente
-+valido[source(judge)] <-  .print("Jugada correcta").
-
+					
+//Movimiento realizado correctamente							
++valido[source(judge)] <- .print("He hecho una buena jugada!").
+							
+							
 //Movimiento realizado entre dos fichas del mismo color
-+tryAgain[source(judge)] <- !realizarJugada.
++tryAgain[source(judge)] <- .print("Me he equivocado al comprobar el color de las fichas. Pensare otra jugada");
+							!realizarJugada.
 
 //Movimiento realizado fuera del tablero
-+invalido(fueraTablero,N)[source(judge)] : N<=3 <-
-								.print("Fuera de tablero numero ",N);
++invalido(fueraTablero,N)[source(judge)] : N<=3 <- 
+								.print("Me he equivocado y he intentado mover una ficha hacia fuera del tablero");
 								!realizarJugada.
 
-+invalido(fueraTablero,N)[source(judge)] : N>3 <-
-								.print("Paso Turno!");
++invalido(fueraTablero,N)[source(judge)] : N>3 <- 
+								.print("Me he equivocado demasiadas veces intentando mover fichas hacia fuera del tablero. Paso Turno!");
 								.send(judge,tell,pasoTurno);
 								.send(judge,untell,pasoTurno).
 
 //Movimiento realizado fuera de turno
-+invalido(fueraTurno,N)[source(judge)] <- .print("Soy un tramposo!!!").
++invalido(fueraTurno,N)[source(judge)] <- .print("Soy un tramposo!!! Intente realizar una jugada fuera de mi turno y el Juez me ha pillado").
+
+//Plan por defecto a ejecutar en caso desconocido.
++Default[source(A)]: not A=self  & not tablero(C,F) <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
+
 

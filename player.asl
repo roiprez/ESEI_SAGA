@@ -1,5 +1,9 @@
 // Agent player in project ESEI_SAGA.mas2j
 
+/*
+* Su objetivo es alcanzar la mayor puntiación posible en cada movimiento
+*/
+
 /* Initial beliefs and rules */
 pensarJugada(X1,Y1,Dir):- 
 	size(N)&
