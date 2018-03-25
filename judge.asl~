@@ -1,5 +1,5 @@
 // Agent judge in project ESEI_SAGA.mas2j
-//Roi Pï¿½rez Lï¿½pez, Martï¿½n Puga Egea
+//Roi Perez Lopez, Martin Puga Egea
 /* ----- Initial beliefs and rules ------ */
 
 /*
@@ -61,13 +61,59 @@ nextMove(P1,P2,NX,NY,Dir):-
 	(Dir == "left" & NX = (P1 - 1) & NY = P2)
 	).
 
+//Reconocimiento de patrones
+//Los Patrones que devuelven más puntos son los primeros.
+comprobarPatrones(Color,X,Y,Puntos) :-
+	pattern4inLineW(Color,X,Y,Direction,Puntos) |
+	pattern4inLineH(Color,X,Y,Direction,Puntos) |
+	pattern3inLineW(Color,X,Y,Direction,Puntos) |
+	pattern3inLineH(Color,X,Y,Direction,Puntos) | 
+	Puntos = 0.
+	
+//Reconoce un patron de 3 en horizontal, devuelve la direccion en que se produce el patron
+pattern3inLineW(Color,X,Y,Direction,300) :- 
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "right") | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "left") | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X+1,Y,_),ficha(Color,_)) & Direction = "medio").
+
+pattern3inLineH(Color,X,Y,Direction,300) :- 
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "up") | 
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) & tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "down") | 
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y+1,_),ficha(Color,_)) & Direction = "medio").
+
+pattern4inLineH(Color,X,Y,Direction,500) :- 
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-3,_),ficha(Color,_)) & Direction = "up") | 
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+3,_),ficha(Color,_)) & Direction = "down") | 
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "medio") | 
+	(tablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & Direction = "medio").
+
+pattern4inLineW(Color,X,Y,Direction,500) :- 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-3,Y,_),ficha(Color,_)) & Direction = "up") | 
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+3,Y,_),ficha(Color,_)) & Direction = "down") | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "medio") | 
+	(tablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & Direction = "medio").
 
 /* ----- Initial goals ----- */
 
 /* ----- Plans ----- */
 
-
-/* COMIENZO INTOCABLE */
+/* ----------------------------------------------------- COMIENZO INTOCABLE ----------------------------------------------------- */
 
 //Comienzo del turno de un jugador.
 +!comienzoTurno : jugadorDescalificado(player1,1) & jugadorDescalificado(player2,1) <-
@@ -134,7 +180,7 @@ nextMove(P1,P2,NX,NY,Dir):-
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] : 
 	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-		.print("El agente ",P," externo a la partida estï¿½ intentando jugar.").
+		.print("El agente ",P," externo a la partida est? intentando jugar.").
 
 // Esta regla la podeis adecuar a vuestras necesidades
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <- 
@@ -171,10 +217,11 @@ nextMove(P1,P2,NX,NY,Dir):-
 		.print(P," ha pasado turno");
 		+cambioTurno(P);
 		!comienzoTurno.
-			
-			
 
-/* FIN INTOCABLE */
+/* ----------------------------------------------------- FIN INTOCABLE ----------------------------------------------------- */
+
+
+
 
 
 +startGame <- //+generacionTablero;
@@ -187,15 +234,18 @@ nextMove(P1,P2,NX,NY,Dir):-
 				.print("EMPIEZA EL JUEGO!")
 				!comienzoTurno.
 
+				
+//Recepcion del tamanho del tablero
 +size(N).
 
+//Recepcion de la informacion de una posicion del tablero
 +addTablero(Celda,Ficha)[source(percept)] <- 
-	-addTablero(Celda,Ficha)[source(percept)];
+	-addTablero(Celda,Ficha)[source(percept)]; //--- TODO -- Revisar tiempos asincronos
 	+tablero(Celda,Ficha).
 	
 	
 //DEBUG: ya no es necesario
-//Generacion aleatoria del tablero y fichas.
+/*//Generacion aleatoria del tablero y fichas.
 +generacionTablero : size(N)<-
 		for ( .range(I,0,(N-1)) ) {
 			for ( .range(J,0,(N-1)) ) {
@@ -205,10 +255,13 @@ nextMove(P1,P2,NX,NY,Dir):-
 				-crearCeldaTablero(I,J,math.round(5*Color),math.round(4*Ficha));
 			};
 		 }.
-		 
+*/
+
 //DEBUG: ya no es necesario
-+crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
+/*+crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
 		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
+*/
+
 
  //Comunicacion del tablero al jugador indicado.
 +mostrarTablero(P) : size(N) <- .findall(tablero(X,Y),tablero(X,Y),Lista);
@@ -218,8 +271,7 @@ nextMove(P1,P2,NX,NY,Dir):-
 		 .send(P,tell,size(N)).
 
 
-
-
+		 
 //Cambio de turno de un jugador a otro
 +cambioTurno(P) : jugadasRestantes(N) & jugadasPlayer(P,J)<-
 				-cambioTurno(P);
@@ -255,32 +307,40 @@ nextMove(P1,P2,NX,NY,Dir):-
 					+jugadasPlayer(P,J+1);
 					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
 
-
-
-//Analisis del movimiento solicitado por un jugador
-//Movimiento correcto
-
 +turnoTerminado(P): jugadorDescalificado(J,B) & B=1 <- +cambioTurnoMismoJugador(P).
 +turnoTerminado(P) <- +cambioTurno(P).
 
-+intercambiarFichas(X,Y,Dir,P) : nextMove(X,Y,NX,NY,Dir) & plNumb(P,PlNumb) <-							
-								-tablero(celda(X,Y,0),ficha(Color1,TipoFicha1));
-								-tablero(celda(NX,NY,0),ficha(Color2,TipoFicha2));
-								.send(player1,untell,tablero(celda(X,Y,0),ficha(Color1,TipoFicha1)));
-								.send(player1,untell,tablero(celda(NX,NY,0),ficha(Color2,TipoFicha2)));
-								.send(player2,untell,tablero(celda(X,Y,0),ficha(Color1,TipoFicha1)));
-								.send(player2,untell,tablero(celda(NX,NY,0),ficha(Color2,TipoFicha2)));
-								//Esta línea produce el intercambio de fichas en el modelo
-								exchange(Color1,X,NX,Color2,Y,NY);
-								+tablero(celda(NX,NY,0),ficha(Color1,TipoFicha1));
-								+tablero(celda(X,Y,0),ficha(Color2,TipoFicha2)); 
-								.send(player1,tell,tablero(celda(NX,NY,0),ficha(Color1,TipoFicha1)));
-								.send(player1,tell,tablero(celda(X,Y,0),ficha(Color2,TipoFicha2)));
-								.send(player2,tell,tablero(celda(NX,NY,0),ficha(Color1,TipoFicha1)));
-								.send(player2,tell,tablero(celda(X,Y,0),ficha(Color2,TipoFicha2)));
-								.print("Se han intercambiado las fichas entre las posiciones (",X,",",Y,") y (",NX,",",NY,")").
+//Analisis del movimiento solicitado por un jugador
+//Movimiento correcto
++intercambiarFichas(X1,Y1,Dir,P) : nextMove(X1,Y1,X2,Y2,Dir) & plNumb(P,PlNumb) <- 			// --- TODO ---							
+								-tablero(celda(X1,Y1,0),ficha(C1,TipoFicha1));
+								-tablero(celda(X2,Y2,0),ficha(C2,TipoFicha2));
+								.send(player1,untell,tablero(celda(X1,Y1,0),ficha(C1,TipoFicha1)));
+								.send(player1,untell,tablero(celda(X2,Y2,0),ficha(C2,TipoFicha2)));
+								.send(player2,untell,tablero(celda(X1,Y1,0),ficha(C1,TipoFicha1)));
+								.send(player2,untell,tablero(celda(X2,Y2,0),ficha(C2,TipoFicha2))); 
+								+tablero(celda(X2,Y2,0),ficha(C1,TipoFicha1)); 
+								+tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)); 
+								.send(player1,tell,tablero(celda(X2,Y2,0),ficha(C1,TipoFicha1)));
+								.send(player1,tell,tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)));
+								.send(player2,tell,tablero(celda(X2,Y2,0),ficha(C1,TipoFicha1)));
+								.send(player2,tell,tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)));
+								
+								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
+								.wait(100); //--- TODO --- Ajusta la velocidad del juego
+								+patternMatch(C2,X1,Y1,Puntos);					
+								.print(Puntos);
+								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")").
 
+								
+								
+//Deteccion de patrones
++patternMatch(Color,X,Y,Puntos) : comprobarPatrones(Color,X,Y,Puntos)<-  // --- TODO ---
+	-patternMatch(Color,X,Y,Puntos). 
+	
+	
 //Plan por defecto a ejecutar en caso desconocido.
-+newMov.
-+Default[source(A)]: not A=self  <- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
++Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
+									-Default[source(A)].
+
 
