@@ -64,12 +64,60 @@ nextMove(P1,P2,NX,NY,Dir):-
 //Reconocimiento de patrones
 //Los Patrones que devuelven m�s puntos son los primeros.
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Pattern) :-
+	(pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW") |
+	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH") |
 	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square") |
 	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW") |
 	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH") |
 	(pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineW") |
 	(pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineH") | 
-	Pattern = "none".
+	(Pattern = "none" & StartX = X & StartY = Y).
+
+	
+pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) :- 
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+3,_),ficha(Color,_)) &
+	tablero(celda(X,Y+4,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X,Y-4,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-3,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-1,_),ficha(Color,_)) & StartAtY = (Y-4) & StartsAtX = X) |
+	(tablero(celda(X,Y-3,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & StartAtY = (Y-3) & StartsAtX = X) |
+	(tablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & StartAtY = (Y-2) & StartsAtX = X) | 
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+3,_),ficha(Color,_)) & StartAtY = (Y-1) & StartsAtX = X).
+
+		
+pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :- 
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+3,Y,_),ficha(Color,_)) &
+	tablero(celda(X+4,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = X) |
+	(tablero(celda(X-4,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-3,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-4)) |
+	(tablero(celda(X-3,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-3)) |
+	(tablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-2)) | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+3,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-1)).
 
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :- 
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
@@ -351,17 +399,16 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 								.send(player2,tell,tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)));
 								
 								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
-								.wait(100); //--- TODO --- Ajusta la velocidad del juego
+								//.wait(100); //--- TODO --- Ajusta la velocidad del juego
 								//Identifica el Patr�n, guarda en StartsAt la posicion m�s 
 								//cercana al 0 a borrar, y en Pattern el patr�n que se ha cumplido
 								+patternMatch(C2,X1,Y1,StartsAtX,StartAtY,Pattern); 
-								//Recoge los datos del patr�n anterior y ejecuta los deletes
 								+handlePattern(C2,StartsAtX,StartAtY,Pattern);
-								.print(Pattern);
+								.print("Patron1", Pattern);
+								
 								+patternMatch(C1,X2,Y2,StartsAtX2,StartAtY2,Pattern2); 
-								//Recoge los datos del patr�n anterior y ejecuta los deletes
 								+handlePattern(C1,StartsAtX2,StartAtY2,Pattern2);
-								.print(Pattern2);
+								.print("Patron2", Pattern2);
 								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")").
 
 								
@@ -374,7 +421,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Quedar�a por implementar el borrado en el juez
 //Quedar�a por implementar la ca�da de fichas
 +handlePattern(Color,StartsAtX,StartsAtY,Pattern) /*: Points(N)*/ <-
-	-handlePattern(Color,StartsAt,Pattern);
+	-handlePattern(Color,StartsAtX,StartsAtY,Pattern);
 	if(Pattern == "3inLineH"){
 		//-+Points(N+300);
 		delete(Color,StartsAtX,StartsAtY);	
@@ -407,19 +454,18 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		delete(Color,StartsAtX,StartsAtY+4);
 	}
 	if(Pattern == "5inLineW"){
-		delete(Color,StartsAt,StartsAtY);	
-		delete(Color,StartsAt+1,StartsAtY);
-		delete(Color,StartsAt+2,StartsAtY);
-		delete(Color,StartsAt+3,StartsAtY);
-		delete(Color,StartsAt+4,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY);	
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX+2,StartsAtY);
+		delete(Color,StartsAtX+3,StartsAtY);
+		delete(Color,StartsAtX+4,StartsAtY);
 	}
 	if(Pattern == "Square"){
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY+1);
-	}
-	.print("Pattern Handled").
+	}.
 	
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
