@@ -333,7 +333,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Recepcion de la informacion de una posicion del tablero
 +addTablero(Celda,Ficha)[source(percept)] <- 
-	.print("entro");
 	-addTablero(Celda,Ficha)[source(percept)]; //--- TODO -- Revisar tiempos asincronos
 	+tablero(Celda,Ficha).
 	
