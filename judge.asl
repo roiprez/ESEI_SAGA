@@ -60,18 +60,20 @@ nextMove(P1,P2,NX,NY,Dir):-
 	(Dir == "right" & NX = (P1 + 1) & NY = P2) |
 	(Dir == "left" & NX = (P1 - 1) & NY = P2)
 	).
+	
 
 //Reconocimiento de patrones
 //Los Patrones que devuelven mï¿½s puntos son los primeros.
-comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Pattern) :-
-	(pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW") |
-	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH") |
-	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square") |
-	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW") |
-	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH") |
-	(pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineW") |
-	(pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineH") | 
-	(Pattern = "none" & StartX = X & StartY = Y).
+comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
+	(pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
+	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
+	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
+	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
+	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW" & Direction="none") |
+	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
+	(pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineW" & Direction="none") |
+	(pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineH" & Direction="none") | 
+	(Pattern = "none" & StartsAtX = X & StartAtY = Y & Direction="none").
 
 	
 pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) :- 
@@ -119,6 +121,25 @@ pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
 	tablero(celda(X+3,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-1)).
 
+patternT(Color,X,Y,Direction) :- 
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "standing") |
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "pointing-right") |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "pointing-left").
+
+	
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :- 
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
 	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
@@ -162,7 +183,7 @@ pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartsAtX = (X-2) & StartAtY = Y).
 	
 	
-//Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patrón
+//Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patrï¿½n
 pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) :- 
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) & 
 	StartsAtX = X & StartAtY = Y) | 
@@ -312,6 +333,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Recepcion de la informacion de una posicion del tablero
 +addTablero(Celda,Ficha)[source(percept)] <- 
+	.print("entro");
 	-addTablero(Celda,Ficha)[source(percept)]; //--- TODO -- Revisar tiempos asincronos
 	+tablero(Celda,Ficha).
 	
@@ -327,11 +349,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 				-crearCeldaTablero(I,J,math.round(5*Color),math.round(4*Ficha));
 			};
 		 }.
-*/
-
-//DEBUG: ya no es necesario
-/*+crearCeldaTablero(I,J,Color,Ficha) :  randomFicha(Ficha, TipoFicha) <-
-		+tablero(celda(I,J,0),ficha(Color,TipoFicha)).
 */
 
 
@@ -399,52 +416,127 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 								.send(player2,tell,tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)));
 								
 								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
-								//.wait(100); //--- TODO --- Ajusta la velocidad del juego
-								//Identifica el Patrï¿½n, guarda en StartsAt la posicion mï¿½s 
-								//cercana al 0 a borrar, y en Pattern el patrï¿½n que se ha cumplido
-								+patternMatch(C2,X1,Y1,StartsAtX,StartAtY,Pattern); 
-								+handlePattern(C2,StartsAtX,StartAtY,Pattern);
-								.print("Patron1", Pattern);
+								.wait(200); //--- TODO --- Ajusta la velocidad del juego
+								+patternMatch(C2,X1,Y1); 
+								-patternMatch(C2,X1,Y1);								
 								
-								+patternMatch(C1,X2,Y2,StartsAtX2,StartAtY2,Pattern2); 
-								+handlePattern(C1,StartsAtX2,StartAtY2,Pattern2);
-								.print("Patron2", Pattern2);
+								+patternMatch(C1,X2,Y2); 
+								-patternMatch(C1,X2,Y2); 
 								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")").
 
-								
+														
 								                
 //Deteccion de patrones
-+patternMatch(Color,X,Y,StartsAtX,StartAtY,Pattern) : comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Pattern) <-  // --- TODO ---
-	-patternMatch(Color,X,Y,StartsAtX,StartAtY,Pattern). 
++patternMatch(Color,X,Y) : comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) <-  // --- TODO ---
+	if(Pattern \== "none"){
+		.print(Pattern);
+		+handlePattern(Color,StartsAtX,StartAtY,Direction,Pattern);
+		-handlePattern(Color,StartsAtX,StartAtY,Direction,Pattern);
+	}. 
 
 //Este serï¿½a un buen sitio para implementar el incremento de puntuaciï¿½n
 //Quedarï¿½a por implementar el borrado en el juez
 //Quedarï¿½a por implementar la caï¿½da de fichas
-+handlePattern(Color,StartsAtX,StartsAtY,Pattern) /*: Points(N)*/ <-
-	-handlePattern(Color,StartsAtX,StartsAtY,Pattern);
++handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) /*: Points(N)*/ <-
 	if(Pattern == "3inLineH"){
-		//-+Points(N+300);
+		.wait(1000);
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
+			
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
+		
+		+handleFall(StartsAtX,StartsAtY);
+		+handleFall(StartsAtX,StartsAtY+1);
+		+handleFall(StartsAtX,StartsAtY+2);
+		-handleFall(StartsAtX,StartsAtY);
+		-handleFall(StartsAtX,StartsAtY+1);
+		-handleFall(StartsAtX,StartsAtY+2);
+		
+		.wait(200);
+		+crearCeldaTablero(StartsAtX,2,Color1);
+		-crearCeldaTablero(StartsAtX,2,Color1);
+		put(Color1,StartsAtX,2);
+		+crearCeldaTablero(StartsAtX,1,Color2);
+		-crearCeldaTablero(StartsAtX,1,Color2);
+		put(Color2,StartsAtX,1);
+		+crearCeldaTablero(StartsAtX,0,Color3);
+		-crearCeldaTablero(StartsAtX,0,Color3);
+		put(Color3,StartsAtX,0);
 	}
+	
+	
 	if(Pattern == "3inLineW"){
-		//-+Points(N+300);
+				
+		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
+		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
+
 		delete(Color,StartsAtX,StartsAtY);	
-		delete(Color,StartsAtX+1,StartsAtY);
-		delete(Color,StartsAtX+2,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);                 
+		delete(Color,StartsAtX+2,StartsAtY);		
+		
+		+handleFall(StartsAtX,StartsAtY);
+		-handleFall(StartsAtX,StartsAtY);
+		+handleFall((StartsAtX+1),StartsAtY);
+		-handleFall((StartsAtX+1),StartsAtY);            
+		+handleFall((StartsAtX+2),StartsAtY);
+		-handleFall((StartsAtX+2),StartsAtY);
+		
+		.wait(200);
+		+crearCeldaTablero(StartsAtX,0,Color1);
+		-crearCeldaTablero(StartsAtX,0,Color1);
+		put(Color1,StartsAtX,0);
+		+crearCeldaTablero(StartsAtX+1,0,Color2);
+		-crearCeldaTablero(StartsAtX+1,0,Color2);
+		put(Color2,StartsAtX+1,0);
+		+crearCeldaTablero(StartsAtX+2,0,Color3);
+		-crearCeldaTablero(StartsAtX+2,0,Color3);
+		put(Color3,StartsAtX+2,0);                   
 	}
-	if(Pattern == "4inLineH"){
+	/*if(Pattern == "4inLineH"){
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
 		delete(Color,StartsAtX,StartsAtY+3);
+		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+3,_),_);
+		
+		+handleFall(StartsAtX,StartsAtY);
+		+handleFall(StartsAtX,StartsAtY+1);
+		+handleFall(StartsAtX,StartsAtY+2);
+		+handleFall(StartsAtX,StartsAtY+3);
+		
+		//putNew(StartsAtX,3);
+		//putNew(StartsAtX,2);
+		//putNew(StartsAtX,1);
+		//putNew(StartsAtX,0);
 	}
 	if(Pattern == "4inLineW"){
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+2,StartsAtY);
 		delete(Color,StartsAtX+3,StartsAtY);
+		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+2,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+3,StartsAtY,_),_);
+		
+		+handleFall(StartsAtX,StartsAtY);
+		+handleFall(StartsAtX+1,StartsAtY);
+		+handleFall(StartsAtX+2,StartsAtY);
+		+handleFall(StartsAtX+3,StartsAtY);
+		
+		//putNew(StartsAtX,0);
+		//putNew(StartsAtX+1,0);
+		//putNew(StartsAtX+2,0);
+		//putNew(StartsAtX+3,0);
 	}
 	if(Pattern == "5inLineH"){
 		delete(Color,StartsAtX,StartsAtY);	
@@ -452,6 +544,24 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		delete(Color,StartsAtX,StartsAtY+2);
 		delete(Color,StartsAtX,StartsAtY+3);
 		delete(Color,StartsAtX,StartsAtY+4);
+		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+2,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+3,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+4,StartsAtY,_),_);
+		
+		+handleFall(StartsAtX,StartsAtY);
+		+handleFall(StartsAtX+1,StartsAtY);
+		+handleFall(StartsAtX+2,StartsAtY);
+		+handleFall(StartsAtX+3,StartsAtY);
+		+handleFall(StartsAtX+4,StartsAtY);
+		
+		//putNew(StartsAtX,0);
+		//putNew(StartsAtX+1,0);
+		//putNew(StartsAtX+2,0);
+		//putNew(StartsAtX+3,0);
+		//putNew(StartsAtX+4,0);
 	}
 	if(Pattern == "5inLineW"){
 		delete(Color,StartsAtX,StartsAtY);	
@@ -459,13 +569,88 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		delete(Color,StartsAtX+2,StartsAtY);
 		delete(Color,StartsAtX+3,StartsAtY);
 		delete(Color,StartsAtX+4,StartsAtY);
+		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+2,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+3,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+4,StartsAtY,_),_);
+		
+		+handleFall(StartsAtX,StartsAtY);
+		+handleFall(StartsAtX+1,StartsAtY);
+		+handleFall(StartsAtX+2,StartsAtY);
+		+handleFall(StartsAtX+3,StartsAtY);
+		+handleFall(StartsAtX+4,StartsAtY);
+		
+		//putNew(StartsAtX,0);
+		//putNew(StartsAtX+1,0);
+		//putNew(StartsAtX+2,0);
+		//putNew(StartsAtX+3,0);
+		//putNew(StartsAtX+4,0);
 	}
 	if(Pattern == "Square"){
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY+1);
+	}
+	if(Pattern == "T"){
+		+handleT(Color,StartsAtX,StartsAtY,Direction);
+	}*/.
+	
++handleT(Color,StartsAtX,StartsAtY,Direction) <-
+	-handleT(Color,StartsAtX,StartsAtY,Direction)
+	if(Direction == "standing"){
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX-1,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY+2);
+	}
+	if(Direction == "upside-down"){
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX-1,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY-1);
+		delete(Color,StartsAtX,StartsAtY-2);
+	}
+	if(Direction == "pointing-right"){
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY-1);
+		delete(Color,StartsAtX+1,StartsAtY);
+		delete(Color,StartsAtX+2,StartsAtY);
+	}
+	if(Direction == "pointing-left"){
+		delete(Color,StartsAtX,StartsAtY);
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY-1);
+		delete(Color,StartsAtX-1,StartsAtY);
+		delete(Color,StartsAtX-2,StartsAtY);
 	}.
+
++crearCeldaTablero(I,J,Color) <-
+		.random(C,10);
+		Color = math.round(5*C);
+		+tablero(celda(I,J,0),ficha(Color,in)).	
+	
+//Hay que revisar aquí que una vez acaben de caer, si se han formado nuevas asociaciones hay que reconocerlas
++handleFall(X,Y) : Y > 0 & tablero(celda(X,Y-1,Owner),ficha(Color,Tipo)) <-
+	.wait(100);
+	-tablero(celda(X,Y-1,_),_);		
+	+tablero(celda(X,Y,Owner),ficha(Color,Tipo));
+	delete(Color,X,Y-1);
+	put(Color,X,Y);
+	+handleFall(X,Y-1);
+	-handleFall(X,Y-1).
+
+//Para la versión de prueba no se usa, seguramente no funcione
++handleFall(X,Y) : Y > 0 <-
+	.print("Handle fall fichas vacï¿½as");
+	.wait(500);	
+	+handleFall(X,Y-1);
+	-handleFall(X,Y-1).
+
 	
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");

@@ -70,6 +70,13 @@ public class Tablero extends Environment {
           model.delete(c,x,y);
          // view.repaint(); //view.update();
           break;
+          case("put"):
+          c = (int)((NumberTerm)message.getTerm(0)).solve();
+          x = (int)((NumberTerm)message.getTerm(1)).solve();
+          y = (int)((NumberTerm)message.getTerm(2)).solve();
+          model.put(c,x,y);
+          //view.repaint(); //view.update();
+          break;
         }
       } else { //Recepcion de un mensaje de otro agente que no sea el juez
         logger.info("Se ha recibido una peticion ilegal. "+ agent +" no puede realizar la accion: "+ message);
@@ -115,7 +122,11 @@ public class Tablero extends Environment {
 
       void delete(int color,int x, int y) throws Exception { // --- TODO ---
         int codColor = getEnvironmentColor(color);
-        remove(codColor,new Location(x,y));
+        remove(codColor,x,y);
+      }
+
+      void put(int c, int x, int y) throws Exception {
+				add(getEnvironmentColor(c),x,y); //Se anhade la ficha generada al tablero
       }
 
       public int getJudgeColor(int color){
@@ -141,6 +152,12 @@ public class Tablero extends Environment {
         }
         return 0;
       }
+    }
+
+    public int getRandomColor(){
+        Random rand = new Random();
+        int color = rand.nextInt(6);
+        return color;
     }
 
 
