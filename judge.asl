@@ -1,12 +1,9 @@
 // Agent judge in project ESEI_SAGA.mas2j
-//Roi Perez Lopez, Martin Puga Egea
+
+//Autores: Roi Perez Lopez, Martin Puga Egea
+
 /* ----- Initial beliefs and rules ------ */
 
-/*
-* El juez debe controlar las puntuaciones
-* El juez debe controlar los ganadores de cada nivel y de la partida
-
-*/
 jugadasRestantes(100).
 
 jugadasPlayer(player1,0).
@@ -23,6 +20,8 @@ fueraTurno(player2,0).
 
 jugadorDescalificado(player1,0).
 jugadorDescalificado(player2,0).
+
+flag(1). //Flag que permite la recursividad en el algoritmo de explosion-gravedad-rellenado
 
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
 movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
@@ -42,10 +41,10 @@ movimiento(X,Y,"right") :- tablero(celda(X+1,Y,_),_).
 //Comprobacion de Color
 colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
 
-//Parte de la generacion aleatoria del tipo de ficha
-randomFicha(Rand,Ficha):-
-	(Rand == 0 & Ficha = ip) | (Rand == 1 & Ficha = in) | (Rand == 2 & Ficha = ct) | (Rand == 3 & Ficha = gs)
-	| (Rand == 4 & Ficha = co).
+//Generacion aleatoria del tipo de ficha
+randomType(RandomNumber,Type):-
+	(RandomNumber == 0 & Type = ip) | (RandomNumber == 1 & Type = in) | (RandomNumber == 2 & Type = ct) | (RandomNumber == 3 & Type = gs)
+	| (RandomNumber == 4 & Type = co).
 
 //Duenho de la jugada
 plNumb(A,PlNumb):-
@@ -63,7 +62,7 @@ nextMove(P1,P2,NX,NY,Dir):-
 	
 
 //Reconocimiento de patrones
-//Los Patrones que devuelven mï¿½s puntos son los primeros.
+//Los Patrones que devuelven mas puntos son los primeros.
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
 	(pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
 	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
@@ -183,7 +182,7 @@ pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartsAtX = (X-2) & StartAtY = Y).
 	
 	
-//Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patrï¿½n
+//Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patr?n
 pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) :- 
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) & 
 	StartsAtX = X & StartAtY = Y) | 
@@ -200,8 +199,11 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y+1,_),ficha(Color,_)) & 
 	StartAtY = (Y-1) & StartsAtX = X).
 
+//Reconocimiento de posicion vacia bajo una ficha para el algoritmo de caida
+emptyUnder(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X,Y+1,_),e).
 
 
+                             
 /* ----- Initial goals ----- */
 
 /* ----- Plans ----- */
@@ -317,9 +319,11 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 
 
-+startGame <- //+generacionTablero;
++startGame : size(N) <- 	//+generacionTablero;
 				//-generacionTablero;
 				.print("Tablero de juego generado!");
+				.send(player1,tell,size(N));
+				.send(player2,tell,size(N));
 				+mostrarTablero(player1);
 				-mostrarTablero(player1);
 				+mostrarTablero(player2);
@@ -333,11 +337,11 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Recepcion de la informacion de una posicion del tablero
 +addTablero(Celda,Ficha)[source(percept)] <- 
-	-addTablero(Celda,Ficha)[source(percept)]; //--- TODO -- Revisar tiempos asincronos
-	+tablero(Celda,Ficha).
+				-addTablero(Celda,Ficha)[source(percept)];
+				+tablero(Celda,Ficha).
 	
 	
-//DEBUG: ya no es necesario
+//DEBUG: ya no es necesario, se realiza en el modelo
 /*//Generacion aleatoria del tablero y fichas.
 +generacionTablero : size(N)<-
 		for ( .range(I,0,(N-1)) ) {
@@ -355,8 +359,13 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +mostrarTablero(P) : size(N) <- .findall(tablero(X,Y),tablero(X,Y),Lista);
 		for ( .member(Estructure,Lista) ) {
 			.send(P,tell,Estructure);
-		 };
-		 .send(P,tell,size(N)).
+		 }.
+		 
++borrarTablero(P) : size(N) <- .findall(tablero(X,Y),tablero(X,Y),Lista);
+		for ( .member(Estructure,Lista) ) {
+			.send(P,untell,Estructure);
+		 }.
+		 
 
 
 		 
@@ -415,327 +424,276 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 								.send(player2,tell,tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)));
 								
 								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
-								//.wait(200); //--- TODO --- Ajusta la velocidad del juego
-								+patternMatch(C2,X1,Y1); 
-								-patternMatch(C2,X1,Y1);								
+								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")");
+								.wait(250); //--- TODO --- Ajusta la velocidad del intercambio de fichas
 								
-								+patternMatch(C1,X2,Y2); 
-								-patternMatch(C1,X2,Y2); 
-								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")").
+								-+flag(1);//Deteción y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado            
+								+fullPatternMatch;   
+								-fullPatternMatch;
+								                  
+								 //.wait(750);  
+								 
+								 
+								 +updatePlayersTableroBB;
+								 -updatePlayersTableroBB.
 
-														
-								                
-//Deteccion de patrones
-+patternMatch(Color,X,Y) : comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) <-  // --- TODO ---
-	if(Pattern \== "none"){
-		.print(Pattern);
-		+handlePattern(Color,StartsAtX,StartAtY,Direction,Pattern);
-		-handlePattern(Color,StartsAtX,StartAtY,Direction,Pattern);
-	}. 
 
-//Este serï¿½a un buen sitio para implementar el incremento de puntuaciï¿½n
-+handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) /*: Points(N)*/ <-
-	if(Pattern == "3inLineH"){
-		//Borramos en la base del conocimiento
-		-tablero(celda(StartsAtX,StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
+
+
+
+								
+								
+								    
+//Deteccion de patrones en todo el tablero
++fullPatternMatch : flag(1) & size(N) <-
+					-fullPatternMatch;
+					-+flag(0);
+					for ( .range(X,0,(N-1)) ) {                                                                                              
+									for ( .range(Y,0,(N-1)) ) {
+										+patternMatchPosition(X,Y); 
+										-patternMatchPosition(X,Y);
+									}
+								}
+								+gravity;
+								-gravity;
+								+refill;
+								-refill;
+								+fullPatternMatch;
+								-fullPatternMatch.
+
++patternMatchPosition(X,Y) : tablero(celda(X,Y,Own),ficha(C,T)) <-
+								+patternMatch(C,X,Y); 
+								-patternMatch(C,X,Y).	                                      
+                           
++patternMatch(C,X,Y): comprobarPatrones(C,X,Y,StartsAtX,StartAtY,Direction,Pattern) <-       
+   if(Pattern \== "none"){
+	.print(Pattern);
+	+handlePattern(C,StartsAtX,StartAtY,Direction,Pattern);
+	-handlePattern(C,StartsAtX,StartAtY,Direction,Pattern);
+	-+flag(1);
+}.  
+
+//Algoritmo de caida 
++gravity : emptyUnder(_,_) & size(N) <-
+					-gravity;
+					for ( .range(X,0,(N-1)) ) {     
+									for ( .range(Y,0,(N-1)) ) {
+										+fall(X,Y);
+										-fall(X,Y);     
+									}      
+								}
+								+gravity;
+								-gravity;                                                                                                                            
+								.wait(100).
+								      
+                                                                                      
++fall(X,Y) : emptyUnder(X,Y) & size(N) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) <- // --- TODO --- Caida en diagonal
+	-tablero(celda(X,Y,Owner),ficha(Color,Tipo));   
+	-tablero(celda(X,Y+1,Owner),e);                                                                                                                
+    +tablero(celda(X,Y,Owner),e);  
+	+tablero(celda(X,Y+1,Owner),ficha(Color,Tipo));
+	delete(Color,X,Y);            
+	put(Color,X,Y+1);
+	+fall(X,Y+1);   
+	-fall(X,Y+1).
+                                              
++refill : tablero(celda(_,0,_),e) & size(N) <- // --- TODO --- Tipo in
+		-refill;
+		for ( .range(X,0,(N-1)) ) { 
+			.random(Color,10);     
+			.random(RandomNumber,10);
+	       	+refillSteak(X,math.round(5*Color),math.round(5*RandomNumber));
+			-refillSteak(X,math.round(5*Color),math.round(5*RandomNumber));                                                                                                                
+			};                                                                                                                               
+		+gravity;           
+		-gravity;  
+		.wait(50);
+		+refill;
+		-refill. 
 	
-		//Borramos en el modelo
-		delete(Color,StartsAtX,StartsAtY);	
++refillSteak(X,Color,RandomNumber) : tablero(celda(X,0,_),e) & randomType(RandomNumber,Type) <-					
+					put(Color,X,0);
+					-tablero(celda(X,0,_),e);     
+					+tablero(celda(X,0,0),ficha(Color,Type)).                                                                  
+
+//Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero después de que el jugador realice movimiento
++updatePlayersTableroBB <- 
+			//+deletePlayersTableroBB;
+			//-deletePlayersTableroBB;
+			+borrarTablero(player1);
+			-borrarTablero(player1);
+			+borrarTablero(player2);
+			-borrarTablero(player2);
+			//+addPlayersTableroBB;
+			//-addPlayersTableroBB.
+			+mostrarTablero(player1);
+			-mostrarTablero(player1);
+			+mostrarTablero(player2);
+			-mostrarTablero(player2).
+			
+			
+			
+/*					                                    
+//Borrado de los BB correspondientes al tablero
++deletePlayersTableroBB : size(N) <-                           //---------- !!!
+							for ( .range(X,0,(N*N-1)) ) {
+								.send(player1,untell,tablero(C,F));
+								.send(player2,untell,tablero(C,F));
+								}.  	         
+//Adicion de los nuevos BB
++addPlayersTableroBB : size(N) <- // ---- NECESARIO ????
+        					for ( .range(X,0,(N-1)) ) {
+								for ( .range(Y,0,(N-1)) ) {
+									+tellBelief(X,Y);
+									-tellBelief(X,Y);
+									};
+								}.
++tellBelief(X,Y) : tablero(celda(X,Y,Own),ficha(C,T)) <-
+								.send(player1,tell,tablero(celda(X,Y,Own),ficha(C,T)));
+								.send(player2,tell,tablero(celda(X,Y,Own),ficha(C,T))).
+								
+*/								
+								
+								
++handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern)<-   
+	if(Pattern == "3inLineH"){                                       
+		delete(Color,StartsAtX,StartsAtY);	                                                     
 		delete(Color,StartsAtX,StartsAtY+1);
-		delete(Color,StartsAtX,StartsAtY+2);
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY+2,StartsAtY-1);
-		+handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-3);
-		-handleFall(StartsAtX,StartsAtY+2,StartsAtY-1);
-		-handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-3);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,2,Color1);
-		-crearCeldaTablero(StartsAtX,2,Color1);
-		put(Color1,StartsAtX,2);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,1,Color2);
-		-crearCeldaTablero(StartsAtX,1,Color2);
-		put(Color2,StartsAtX,1);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color3);
-		-crearCeldaTablero(StartsAtX,0,Color3);
-		put(Color3,StartsAtX,0);
-	}
-	
-	
-	if(Pattern == "3inLineW"){
-		//Borramos en la base del conocimiento		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);        
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
-		
+		delete(Color,StartsAtX,StartsAtY+2);  
+		-tablero(celda(StartsAtX,StartsAtY,_),_);                       
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);                                                 
+		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
+		+tablero(celda(StartsAtX,StartsAtY,0),e);  // e == empty
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e);         
+		+tablero(celda(StartsAtX,StartsAtY+2,0),e);  
+		}                 
+	if(Pattern == "3inLineW"){	                                             
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX+1,StartsAtY);                 
-		delete(Color,StartsAtX+2,StartsAtY);		
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-1);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-1);
-		+handleFall((StartsAtX+1),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+1),StartsAtY,StartsAtY-1);            
-		+handleFall((StartsAtX+2),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+2),StartsAtY,StartsAtY-1);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color1);
-		-crearCeldaTablero(StartsAtX,0,Color1);
-		put(Color1,StartsAtX,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+1,0,Color2);
-		-crearCeldaTablero(StartsAtX+1,0,Color2);
-		put(Color2,StartsAtX+1,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+2,0,Color3);
-		-crearCeldaTablero(StartsAtX+2,0,Color3);
-		put(Color3,StartsAtX+2,0);                   
-	}
+		delete(Color,StartsAtX+2,StartsAtY);		  
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);    
+		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
+		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
+		+tablero(celda(StartsAtX,StartsAtY,0),e);    
+		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
+		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
+	}                                               
 	if(Pattern == "4inLineH"){
-		//Borramos en la base del conocimiento
-		-tablero(celda(StartsAtX,StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+3,_),_);
-	
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
 		delete(Color,StartsAtX,StartsAtY+3);
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY+2,StartsAtY-1);
-		+handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-3);
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-4);
-		-handleFall(StartsAtX,StartsAtY+2,StartsAtY-1);
-		-handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-3);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-4);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,3,Color1);
-		-crearCeldaTablero(StartsAtX,3,Color1);
-		put(Color1,StartsAtX,3);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,2,Color2);
-		-crearCeldaTablero(StartsAtX,2,Color2);
-		put(Color2,StartsAtX,2);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,1,Color3);
-		-crearCeldaTablero(StartsAtX,1,Color3);
-		put(Color3,StartsAtX,1);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color4);
-		-crearCeldaTablero(StartsAtX,0,Color4);
-		put(Color4,StartsAtX,0);
+		//Borramos en la base del conocimiento
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+3,_),_);
+		+tablero(celda(StartsAtX,StartsAtY,0),e);    
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+2,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+3,0),e);
 	}
 	if(Pattern == "4inLineW"){
-		//Borramos en la base del conocimiento		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);        
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+3),StartsAtY,_),_);
-		
-		//Borramos en el modelo
-		delete(Color,StartsAtX,StartsAtY);	
-		delete(Color,StartsAtX+1,StartsAtY);                 
-		delete(Color,StartsAtX+2,StartsAtY);
-		delete(Color,StartsAtX+3,StartsAtY);		
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-1);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-1);
-		+handleFall((StartsAtX+1),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+1),StartsAtY,StartsAtY-1);            
-		+handleFall((StartsAtX+2),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+2),StartsAtY,StartsAtY-1);
-		+handleFall((StartsAtX+3),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+3),StartsAtY,StartsAtY-1);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color1);
-		-crearCeldaTablero(StartsAtX,0,Color1);
-		put(Color1,StartsAtX,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+1,0,Color2);
-		-crearCeldaTablero(StartsAtX+1,0,Color2);
-		put(Color2,StartsAtX+1,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+2,0,Color3);
-		-crearCeldaTablero(StartsAtX+2,0,Color3);
-		put(Color3,StartsAtX+2,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+3,0,Color4);
-		-crearCeldaTablero(StartsAtX+3,0,Color4);
-		put(Color4,StartsAtX+3,0); 
-	}
-	if(Pattern == "5inLineH"){
-		//Borramos en la base del conocimiento
-		-tablero(celda(StartsAtX,StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+3,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+4,_),_);
-	
-		//Borramos en el modelo
-		delete(Color,StartsAtX,StartsAtY);	
-		delete(Color,StartsAtX,StartsAtY+1);
-		delete(Color,StartsAtX,StartsAtY+2);
-		delete(Color,StartsAtX,StartsAtY+3);
-		delete(Color,StartsAtX,StartsAtY+4);
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY+2,StartsAtY-1);
-		+handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-3);
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-4);
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-5);
-		-handleFall(StartsAtX,StartsAtY+2,StartsAtY-1);
-		-handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-3);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-4);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-5);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,4,Color1);
-		-crearCeldaTablero(StartsAtX,4,Color1);
-		put(Color1,StartsAtX,4);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,3,Color2);
-		-crearCeldaTablero(StartsAtX,3,Color2);
-		put(Color2,StartsAtX,3);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,2,Color3);
-		-crearCeldaTablero(StartsAtX,2,Color3);
-		put(Color3,StartsAtX,2);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,1,Color4);
-		-crearCeldaTablero(StartsAtX,1,Color4);
-		put(Color4,StartsAtX,1);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color5);
-		-crearCeldaTablero(StartsAtX,0,Color5);
-		put(Color5,StartsAtX,0);
-	}
-	if(Pattern == "5inLineW"){
-		//Borramos en la base del conocimiento		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);        
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+3),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+4),StartsAtY,_),_);
-		
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX+1,StartsAtY);                 
 		delete(Color,StartsAtX+2,StartsAtY);
 		delete(Color,StartsAtX+3,StartsAtY);
-		delete(Color,StartsAtX+4,StartsAtY);		
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-1);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-1);
-		+handleFall((StartsAtX+1),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+1),StartsAtY,StartsAtY-1);            
-		+handleFall((StartsAtX+2),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+2),StartsAtY,StartsAtY-1);
-		+handleFall((StartsAtX+3),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+3),StartsAtY,StartsAtY-1);
-		+handleFall((StartsAtX+4),StartsAtY,StartsAtY-1);
-		-handleFall((StartsAtX+4),StartsAtY,StartsAtY-1);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color1);
-		-crearCeldaTablero(StartsAtX,0,Color1);
-		put(Color1,StartsAtX,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+1,0,Color2);
-		-crearCeldaTablero(StartsAtX+1,0,Color2);
-		put(Color2,StartsAtX+1,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+2,0,Color3);
-		-crearCeldaTablero(StartsAtX+2,0,Color3);
-		put(Color3,StartsAtX+2,0); 
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+3,0,Color4);
-		-crearCeldaTablero(StartsAtX+3,0,Color4);
-		put(Color4,StartsAtX+3,0); 
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+4,0,Color5);
-		-crearCeldaTablero(StartsAtX+4,0,Color5);
-		put(Color5,StartsAtX+4,0); 
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);       
+		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
+		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
+		-tablero(celda((StartsAtX+3),StartsAtY,_),_);
+		+tablero(celda(StartsAtX,StartsAtY,0),e);    
+		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
+		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
+		+tablero(celda((StartsAtX+3),StartsAtY,0),e);
+	}                               
+	if(Pattern == "5inLineH"){ 
+		//Borramos en el modelo
+		delete(Color,StartsAtX,StartsAtY);	
+		delete(Color,StartsAtX,StartsAtY+1);
+		delete(Color,StartsAtX,StartsAtY+2);
+		delete(Color,StartsAtX,StartsAtY+3);
+		delete(Color,StartsAtX,StartsAtY+4); 
+		//Borramos en la base del conocimiento
+		-tablero(celda(StartsAtX,StartsAtY,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_); 
+		-tablero(celda(StartsAtX,StartsAtY+2,_),_); 
+		-tablero(celda(StartsAtX,StartsAtY+3,_),_); 
+		-tablero(celda(StartsAtX,StartsAtY+4,_),_); 
+		+tablero(celda(StartsAtX,StartsAtY,0),e);  
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e); 
+		+tablero(celda(StartsAtX,StartsAtY+2,0),e);         
+		+tablero(celda(StartsAtX,StartsAtY+3,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+4,0),e);      
 	}
-	if(Pattern == "Square"){
+	if(Pattern == "5inLineW"){		
+		//Borramos en el modelo
+		delete(Color,StartsAtX,StartsAtY);	
+		delete(Color,StartsAtX+1,StartsAtY);                 
+		delete(Color,StartsAtX+2,StartsAtY);
+		delete(Color,StartsAtX+3,StartsAtY);
+		delete(Color,StartsAtX+4,StartsAtY);
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda((StartsAtX+1),StartsAtY,_),_);                                                            
+		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
+		-tablero(celda((StartsAtX+3),StartsAtY,_),_);                  
+		-tablero(celda((StartsAtX+4),StartsAtY,_),_);
+		+tablero(celda(StartsAtX,StartsAtY,0),e);    
+		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
+		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
+		+tablero(celda((StartsAtX+3),StartsAtY,0),e);
+		+tablero(celda((StartsAtX+4),StartsAtY,0),e);      
+	}
+	if(Pattern == "Square"){                         
+	  	//Borramos en el modelo
+		delete(Color,StartsAtX,StartsAtY);	
+		delete(Color,StartsAtX+1,StartsAtY);                                                  
+		delete(Color,StartsAtX,StartsAtY+1);	
+		delete(Color,StartsAtX+1,StartsAtY+1);  
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);        
 		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
 		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
 		-tablero(celda(StartsAtX+1,StartsAtY+1,_),_);
-		
-		//Borramos en el modelo
-		delete(Color,StartsAtX,StartsAtY);	
-		delete(Color,StartsAtX+1,StartsAtY);                 
-		delete(Color,StartsAtX,StartsAtY+1);	
-		delete(Color,StartsAtX+1,StartsAtY+1); 		
-		
-		//Generamos la caída para cada una de las fichas
-		+handleFall(StartsAtX,StartsAtY,StartsAtY-2);
-		-handleFall(StartsAtX,StartsAtY,StartsAtY-2);
-		+handleFall((StartsAtX+1),StartsAtY,StartsAtY-2);
-		-handleFall((StartsAtX+1),StartsAtY,StartsAtY-2);
-		+handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		-handleFall(StartsAtX,StartsAtY+1,StartsAtY-2);
-		+handleFall((StartsAtX+1),StartsAtY+1,StartsAtY-2);
-		-handleFall((StartsAtX+1),StartsAtY+1,StartsAtY-2);
-		
-		//Generamos las fichas nuevas y las colocamos en el modelo
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,0,Color1);
-		-crearCeldaTablero(StartsAtX,0,Color1);
-		put(Color1,StartsAtX,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+1,0,Color2);
-		-crearCeldaTablero(StartsAtX+1,0,Color2);
-		put(Color2,StartsAtX+1,0);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX,1,Color3);
-		-crearCeldaTablero(StartsAtX,1,Color3);
-		put(Color3,StartsAtX,1);
-		.wait(200);
-		+crearCeldaTablero(StartsAtX+1,1,Color4);
-		-crearCeldaTablero(StartsAtX+1,1,Color4);
-		put(Color4,StartsAtX+1,1);
+		+tablero(celda(StartsAtX,StartsAtY,0),e);       
+		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
+		+tablero(celda(StartsAtX+1,StartsAtY+1,0),e);			
 	}
-	/*if(Pattern == "T"){
+	if(Pattern == "T"){ // --- TODO ---
 		+handleT(Color,StartsAtX,StartsAtY,Direction);
-	}*/.
+		-handleT(Color,StartsAtX,StartsAtY,Direction);
+	}
+	.wait(350). //Tiempo de espera tras una explosion
 	
-+handleT(Color,StartsAtX,StartsAtY,Direction) <-
+	
++handleT(Color,StartsAtX,StartsAtY,Direction) <- // --- TODO ---
 	-handleT(Color,StartsAtX,StartsAtY,Direction)
 	if(Direction == "standing"){
+		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX-1,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
+ 
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
+		-tablero(celda(StartsAtX-1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY+2,_),_);	
+		+tablero(celda(StartsAtX,StartsAtY,0),e);        
+		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
+		+tablero(celda(StartsAtX-1,StartsAtY,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+2,0),e);	
 	}
 	if(Direction == "upside-down"){
 		delete(Color,StartsAtX,StartsAtY);
@@ -743,6 +701,18 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		delete(Color,StartsAtX-1,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY-1);
 		delete(Color,StartsAtX,StartsAtY-2);
+		
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
+		-tablero(celda(StartsAtX-1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX,StartsAtY-1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY-2,_),_);	
+		+tablero(celda(StartsAtX,StartsAtY,0),e);        
+		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
+		+tablero(celda(StartsAtX-1,StartsAtY,0),e);
+		+tablero(celda(StartsAtX,StartsAtY-1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY-2,0),e);	
 	}
 	if(Direction == "pointing-right"){
 		delete(Color,StartsAtX,StartsAtY);
@@ -750,6 +720,18 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		delete(Color,StartsAtX,StartsAtY-1);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+2,StartsAtY);
+		
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY-1,_),_);
+		-tablero(celda(StartsAtX+1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX+2,StartsAtY,_),_);	
+		+tablero(celda(StartsAtX,StartsAtY,0),e);        
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY-1,0),e);
+		+tablero(celda(StartsAtX+1,StartsAtY,0),e);
+		+tablero(celda(StartsAtX+2,StartsAtY,0),e);	
 	}
 	if(Direction == "pointing-left"){
 		delete(Color,StartsAtX,StartsAtY);
@@ -757,43 +739,29 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		delete(Color,StartsAtX,StartsAtY-1);
 		delete(Color,StartsAtX-1,StartsAtY);
 		delete(Color,StartsAtX-2,StartsAtY);
+		
+		//Borramos en la base del conocimiento		
+		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY-1,_),_);
+		-tablero(celda(StartsAtX-1,StartsAtY,_),_);
+		-tablero(celda(StartsAtX-2,StartsAtY,_),_);	
+		+tablero(celda(StartsAtX,StartsAtY,0),e);        
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY-1,0),e);
+		+tablero(celda(StartsAtX-1,StartsAtY,0),e);
+		+tablero(celda(StartsAtX-2,StartsAtY,0),e);	
 	}.
 
 +crearCeldaTablero(I,J,Color) <-
 		.random(C,10);
 		Color = math.round(5*C);
-		+tablero(celda(I,J,0),ficha(Color,in)).	
-	
-//Hay que revisar aquí que una vez acaben de caer, si se han formado nuevas asociaciones hay que reconocerlas
-+handleFall(X,Y,NextY) : Y > 0 & tablero(celda(X,NextY,Owner),ficha(Color,Tipo)) <-
-	.wait(300);
-	-tablero(celda(X,NextY,_),_);		
-	+tablero(celda(X,Y,Owner),ficha(Color,Tipo));
-	delete(Color,X,NextY);
-	put(Color,X,Y);
-	+handleFall(X,Y-1,NextY-1);
-	-handleFall(X,Y-1,NextY-1).
+		+tablero(celda(I,J,0),ficha(Color,in)).	// --- TODO --- Asignar tipo aleatorio                        
 
-/*//Para la versión de prueba no se usa, seguramente no funcione
-+handleFall(X,Y) : Y > 0 <-
-	.print("Handle fall fichas vacias");
-	.wait(1000);
-	NextY = Y-2;	
-	+handleFallMore(X,Y,NextY);
-	-handleFallMore(X,Y,NextY).
-
-+handleFallMore(X,Y,NextY) : Y > 0 & tablero(celda(X,NextY,Owner),ficha(Color,Tipo)) <-
-	.print("Handle fall fichas vacias");
-	.wait(1000);
-	-tablero(celda(X,Y-1,_),_);		
-	+tablero(celda(X,Y,Owner),ficha(Color,Tipo));
-	delete(Color,X,NextY);
-	put(Color,X,Y);	
-	+handleFall(X,Y);
-	-handleFall(X,Y).     */       
 	
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
+
 
 

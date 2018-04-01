@@ -29,7 +29,8 @@ public class Tablero extends Environment {
   private TableroModel model;
   private TableroView  view;
 
-  String label = "X"; // --- TODO ---
+  String [][] steakType = new String[GSize][GSize]; // --- TODO ---
+  String label = "";
 
   @Override
   public void init(String[] args) {
@@ -61,14 +62,14 @@ public class Tablero extends Environment {
           int x2 = (int)((NumberTerm)message.getTerm(4)).solve();
           int y2 = (int)((NumberTerm)message.getTerm(5)).solve();
           model.exchange(c1,x1,y1,c2,x2,y2);
-         // view.repaint(); //view.update(); //--- TODO --- update() vs repaint()
+          //view.repaint(); //view.update(); //--- TODO --- update() vs repaint()
           break;
           case("delete"):
           int c = (int)((NumberTerm)message.getTerm(0)).solve();
           int x = (int)((NumberTerm)message.getTerm(1)).solve();
           int y = (int)((NumberTerm)message.getTerm(2)).solve();
           model.delete(c,x,y);
-         // view.repaint(); //view.update();
+          //view.repaint(); //view.update();
           break;
           case("put"):
           c = (int)((NumberTerm)message.getTerm(0)).solve();
@@ -94,8 +95,6 @@ public class Tablero extends Environment {
 
       Random random = new Random(System.currentTimeMillis());
 
-      String label = "";
-
       private TableroModel() {
         super(GSize, GSize, 3);
         int color = 16;
@@ -103,7 +102,7 @@ public class Tablero extends Environment {
           for(int j = 0; j < GSize; j++){
             add(color,i,j); //Se anhade la ficha generada al tablero
             int judgeColor = getJudgeColor(color);
-            addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))"));//Le pasa al juez la información del tablero
+            addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))"));//Le pasa al juez la información del tablero // --- TODO --- Generar tipo de ficha aleatorio
             if (color < 512) {color = color * 2;}//Itera sobre los colores de las fichas para asignar los colores secuencialmente
             else {color = 16;};
           };
@@ -152,13 +151,39 @@ public class Tablero extends Environment {
         }
         return 0;
       }
-    }
 
-    public int getRandomColor(){
+    public int getRandomColor(){ // --- TODO ---
         Random rand = new Random();
         int color = rand.nextInt(6);
         return color;
     }
+
+    public boolean isEmpty(int i, int j){ //HERRAMIENTA
+      return isFree(BLUESTEAK,i,j) && isFree(REDSTEAK,i,j) && isFree(GREENSTEAK,i,j) && isFree(GRAYSTEAK,i,j) && isFree(ORANGESTEAK,i,j) && isFree(MAGENTASTEAK,i,j);
+    }
+
+    public int getColour(int i, int j){ //HERRAMIENTA
+      if(!isFree(BLUESTEAK,i,j)){
+        return BLUESTEAK;
+      }
+      if(!isFree(REDSTEAK,i,j)){
+        return REDSTEAK;
+      }
+      if(!isFree(GREENSTEAK,i,j)){
+        return GREENSTEAK;
+      }
+      if(!isFree(GRAYSTEAK,i,j)){
+        return GRAYSTEAK;
+      }
+      if(!isFree(ORANGESTEAK,i,j)){
+        return ORANGESTEAK;
+      }
+      if(!isFree(MAGENTASTEAK,j)){
+        return MAGENTASTEAK;
+      }
+      return 0; //Empty
+    }
+  } //End of Class [Tablero Model]
 
 
 
@@ -168,7 +193,7 @@ public class Tablero extends Environment {
         super(model, "Tablero", 400);
         defaultFont = new Font("Arial", Font.BOLD, 18);
         setVisible(true);
-        //repaint();
+        repaint();
       }
 
       @Override
@@ -186,8 +211,10 @@ public class Tablero extends Environment {
       public void drawSteak(Graphics g, int x, int y, Color c, String label) {
         g.setColor(c);
         g.fillOval(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
+        g.setColor(Color.black);
         drawString(g,x,y,defaultFont,label); // --- TODO ---
-      }
-    }
 
-  }
+      }
+    } //End of Class [Tablero View]
+
+  } // End of Class [Tablero Environment]
