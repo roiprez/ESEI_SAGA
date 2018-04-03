@@ -1,7 +1,7 @@
 // Agent player in project ESEI_SAGA.mas2j
 
 /*
-* Su objetivo es alcanzar la mayor puntiación posible en cada movimiento
+* Su objetivo es alcanzar la mayor puntiaciï¿½n posible en cada movimiento
 */
 
 /* Initial beliefs and rules */
@@ -148,20 +148,20 @@ pattern4inLineW(Color,X,Y) :-
 	
 //Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patr?n
 pattern3inLineW(Color,X,Y) :- 
-	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & virtualTablero(celda(X+2,Y,_),ficha(Color,_)) &
-	.print(virtualTablero(celda(X,Y,_),ficha(Color,_))) &
-	.print(virtualTablero(celda(X+1,Y,_),ficha(Color,_))) &
-	.print(virtualTablero(celda(X+2,Y,_),ficha(Color,_)))
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	.print(tablero(celda(X,Y,_),ficha(Color,_))) &
+	.print(tablero(celda(X+1,Y,_),ficha(Color,_))) &
+	.print(tablero(celda(X+2,Y,_),ficha(Color,_)))
 	) | 
-	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	.print("Empezamos el 3 en línea2: ",Color,", ",X,", ",Y)) | 
-	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	.print("Empezamos el 3 en línea3: ",Color,", ",X,", ",Y)).
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	.print("Empezamos el 3 en lï¿½nea2: ",Color,", ",X,", ",Y)) | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	.print("Empezamos el 3 en lï¿½nea3: ",Color,", ",X,", ",Y)).
 
 pattern3inLineH(Color,X,Y) :- 
-	(virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & virtualTablero(celda(X,Y+2,_),ficha(Color,_))) |
-	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & virtualTablero(celda(X,Y-2,_),ficha(Color,_))) |  
-	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & virtualTablero(celda(X,Y+1,_),ficha(Color,_))).
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) & tablero(celda(X,Y+2,_),ficha(Color,_))) |
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y-2,_),ficha(Color,_))) |  
+	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y+1,_),ficha(Color,_))).
 
 	
 
@@ -178,16 +178,9 @@ pattern3inLineH(Color,X,Y) :-
 
 //Realizacion de la jugada
 +!realizarJugada  <-
-					.findall(virtualTablero(X,Y),virtualTablero(X,Y),ListaVirt);
-					for ( .member(virtualTablero(X,Y),ListaVirt) ) {
-						-virtualTablero(X,Y);
-					};
-					.findall(tablero(X,Y),tablero(X,Y),Lista);
-					for ( .member(tablero(X,Y),Lista) ) {
-						+virtualTablero(X,Y);
-					 };
 					+pensarJugada;
 					-pensarJugada;
+					 			 
 					?cordX(X);
 					?cordY(Y);
 					?dirMax(Dir);
@@ -301,12 +294,12 @@ pattern3inLineH(Color,X,Y) :-
 		}
 	}.
 	
-+comprobarUp(X,Y): virtualTablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo)) <-
++comprobarUp(X,Y): tablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp)) & tablero(celda(X,Y,_),ficha(Color,Tipo)) <-
 
-		-virtualTablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp));
-		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
-		+virtualTablero(celda(X,Y-1,0),ficha(Color,Tipo));
-		+virtualTablero(celda(X,Y,0),ficha(ColorUp,TipoUp));
+		-tablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp));
+		-tablero(celda(X,Y,_),ficha(Color,Tipo));
+		+tablero(celda(X,Y-1,0),ficha(Color,Tipo));
+		+tablero(celda(X,Y,0),ficha(ColorUp,TipoUp));
 		
 		?comprobarPatrones(ColorUp,X,Y,PuntosUp1);
 		?comprobarPatrones(Color,X,Y-1,PuntosUp2);
@@ -314,17 +307,17 @@ pattern3inLineH(Color,X,Y) :-
 		PuntosUp = PuntosUp1 + PuntosUp2;
 		-+puntosUp(PuntosUp);
 		
-		-virtualTablero(celda(X,Y-1,_),ficha(Color,Tipo));
-		-virtualTablero(celda(X,Y,_),ficha(ColorUp,TipoUp));
-		+virtualTablero(celda(X,Y-1,0),ficha(ColorUp,TipoUp));
-		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-tablero(celda(X,Y-1,_),ficha(Color,Tipo));
+		-tablero(celda(X,Y,_),ficha(ColorUp,TipoUp));
+		+tablero(celda(X,Y-1,0),ficha(ColorUp,TipoUp));
+		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
 	
-+comprobarDown(X,Y) : virtualTablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo))<-		
++comprobarDown(X,Y) : tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-		
 
-		-virtualTablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown));
-		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
-		+virtualTablero(celda(X,Y+1,0),ficha(Color,Tipo));
-		+virtualTablero(celda(X,Y,0),ficha(ColorDown,TipoDown));
+		-tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown));
+		-tablero(celda(X,Y,_),ficha(Color,Tipo));
+		+tablero(celda(X,Y+1,0),ficha(Color,Tipo));
+		+tablero(celda(X,Y,0),ficha(ColorDown,TipoDown));
 		
 		?comprobarPatrones(ColorDown,X,Y,PuntosDown1);
 		?comprobarPatrones(Color,X,Y+1,PuntosDown2);
@@ -332,17 +325,17 @@ pattern3inLineH(Color,X,Y) :-
 		PuntosDown = PuntosDown1 + PuntosDown2;
 		-+puntosDown(PuntosDown);
 		
-		-virtualTablero(celda(X,Y+1,_),ficha(Color,Tipo));
-		-virtualTablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
-		+virtualTablero(celda(X,Y+1,0),ficha(ColorDown,TipoDown));
-		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-tablero(celda(X,Y+1,_),ficha(Color,Tipo));
+		-tablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
+		+tablero(celda(X,Y+1,0),ficha(ColorDown,TipoDown));
+		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
 		
-+comprobarRight(X,Y) : virtualTablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo))<-
++comprobarRight(X,Y) : tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
 		
-		-virtualTablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight));
-		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
-		+virtualTablero(celda(X+1,Y,0),ficha(Color,Tipo));
-		+virtualTablero(celda(X,Y,0),ficha(ColorRight,TipoRight));
+		-tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight));
+		-tablero(celda(X,Y,_),ficha(Color,Tipo));
+		+tablero(celda(X+1,Y,0),ficha(Color,Tipo));
+		+tablero(celda(X,Y,0),ficha(ColorRight,TipoRight));
 		
 		
 		?comprobarPatrones(ColorRight,X,Y,PuntosRight1);	
@@ -353,17 +346,17 @@ pattern3inLineH(Color,X,Y) :-
 		PuntosRight = PuntosRight1 + PuntosRight2;
 		-+puntosRight(PuntosRight);
 		
-		-virtualTablero(celda(X+1,Y,_),ficha(Color,Tipo));
-		-virtualTablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
-		+virtualTablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
-		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-tablero(celda(X+1,Y,_),ficha(Color,Tipo));
+		-tablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
+		+tablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
+		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
 
-+comprobarLeft(X,Y) : virtualTablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo))<-
++comprobarLeft(X,Y) : tablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
 		
-		-virtualTablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft));
-		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
-		+virtualTablero(celda(X-1,Y,0),ficha(Color,Tipo));
-		+virtualTablero(celda(X,Y,0),ficha(ColorLeft,TipoLeft));
+		-tablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft));
+		-tablero(celda(X,Y,_),ficha(Color,Tipo));
+		+tablero(celda(X-1,Y,0),ficha(Color,Tipo));
+		+tablero(celda(X,Y,0),ficha(ColorLeft,TipoLeft));
 		
 		?comprobarPatrones(ColorLeft,X,Y,PuntosLeft1);
 		?comprobarPatrones(Color,X-1,Y,PuntosLeft2);
@@ -371,10 +364,21 @@ pattern3inLineH(Color,X,Y) :-
 		PuntosLeft = PuntosLeft1 + PuntosLeft2;
 		-+puntosLeft(PuntosLeft);
 		
-		-virtualTablero(celda(X-1,Y,_),ficha(Color,Tipo));  
-		-virtualTablero(celda(X,Y,_),ficha(ColorLeft,TipoLeft));
-		+virtualTablero(celda(X-1,Y,0),ficha(ColorLeft,TipoLeft));
-		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-tablero(celda(X-1,Y,_),ficha(Color,Tipo));  
+		-tablero(celda(X,Y,_),ficha(ColorLeft,TipoLeft));
+		+tablero(celda(X-1,Y,0),ficha(ColorLeft,TipoLeft));
+		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+		
+//Borrado de todas las creencias sobre el tablero para poder hacer una actualizacion limpia /* CODIGO NUEVO */ 
++deleteTableroBB [source(judge)]<-
+				for ( tablero(X,Y) ) {
+					-tablero(X,Y); 
+					}.  
+                                                                
+//Recepcion de la informacion de una posicion del tablero     /* CODIGO NUEVO */
++tablero(Celda,Ficha)[source(judge)] <-  //Actua como interface para que las creencias contenidas en la base del conocimiento sean "self" y evitar posibles errores en las tomas de decisiones
+				-tablero(Celda,Ficha)[source(judge)];
+				+tablero(Celda,Ficha).
 	
 //Movimiento realizado correctamente							
 +valido[source(judge)] <- .print("He hecho una buena jugada!").

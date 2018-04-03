@@ -1,7 +1,7 @@
 // Agent player in project ESEI_SAGA.mas2j
 
 /*
-* Su objetivo es alcanzar la mayor puntiación posible en cada movimiento
+* Su objetivo es alcanzar la mayor puntiaciï¿½n posible en cada movimiento
 */
 
 /* Initial beliefs and rules */
@@ -12,14 +12,14 @@ pensarJugadaAleatoria(X1,Y1,Dir):-
 	X1 = math.round((N-1)*X11) &
 	Y1 = math.round((N-1)*Y11) &   
 	(
-	tablero(celda(X1,Y1,_),ficha(Color1,_)) &
-	((tablero(celda(X1,Y1-1,_),ficha(Color2,_)) &
+	virtualTablero(celda(X1,Y1,_),ficha(Color1,_)) &
+	((virtualTablero(celda(X1,Y1-1,_),ficha(Color2,_)) &
 	(Color1 \== Color2 & Dir = "up")) | 
-	(tablero(celda(X1,Y1+1,_),ficha(Color2,_)) &
+	(virtualTablero(celda(X1,Y1+1,_),ficha(Color2,_)) &
 	(Color1 \== Color2 & Dir = "down")) | 
-	(tablero(celda(X1-1,Y1,_),ficha(Color2,_)) &
+	(virtualTablero(celda(X1-1,Y1,_),ficha(Color2,_)) &
 	(Color1 \== Color2 & Dir = "left")) | 
-	(tablero(celda(X1+1,Y1,_),ficha(Color2,_)) &
+	(virtualTablero(celda(X1+1,Y1,_),ficha(Color2,_)) &
 	(Color1 \== Color2 & Dir = "right")) | Dir = "up")
 	).
 	
@@ -29,133 +29,139 @@ pensarJugadaAleatoria(X1,Y1,Dir):-
 //Los Patrones que devuelven mas puntos son los primeros.
 comprobarPatrones(Color,X,Y,Puntos) :-
 	(pattern5inLineW(Color,X,Y) & Puntos=1000) |
-	(pattern5inLineH(Color,X,Y) & Puntos=1000) |
+	(pattern5inLineH(Color,X,Y) & Puntos=1050) |
 	(patternT(Color,X,Y) & Puntos=800) |
-	(patternSquare(Color,X,Y) & Puntos=600) |
-	(pattern4inLineW(Color,X,Y) & Puntos=400) |
-	(pattern4inLineH(Color,X,Y) & Puntos=400) |
+	(patternSquare(Color,X,Y) & Puntos=600)|
+	(pattern4inLineW(Color,X,Y) & Puntos=400)|
+	(pattern4inLineH(Color,X,Y) & Puntos=450) |
 	(pattern3inLineW(Color,X,Y) & Puntos=200) |
-	(pattern3inLineH(Color,X,Y) & Puntos=200) | 
+	(pattern3inLineH(Color,X,Y) & Puntos=250) | 
 	(Puntos=0).
 
 	
 pattern5inLineH(Color,X,Y) :- 
-	(tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+3,_),ficha(Color,_)) &
-	tablero(celda(X,Y+4,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-4,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-3,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-1,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-3,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_))) | 
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+3,_),ficha(Color,_))).
+	(virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+3,_),ficha(Color,_)) &
+	virtualTablero(celda(X,Y+4,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-4,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-3,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-1,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-3,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+2,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+3,_),ficha(Color,_))).
 
 		
-pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :- 
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+3,Y,_),ficha(Color,_)) &
-	tablero(celda(X+4,Y,_),ficha(Color,_))) |
-	(tablero(celda(X-4,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-3,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_))) |
-	(tablero(celda(X-3,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_))) |
-	(tablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_))) | 
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+3,Y,_),ficha(Color,_))).
+pattern5inLineW(Color,X,Y) :- 
+	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+3,Y,_),ficha(Color,_)) &
+	virtualTablero(celda(X+4,Y,_),ficha(Color,_))) |
+	(virtualTablero(celda(X-4,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-3,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_))) |
+	(virtualTablero(celda(X-3,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_))) |
+	(virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+2,Y,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+3,Y,_),ficha(Color,_))).
 
-patternT(Color,X,Y,Direction) :- 
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_))) |
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-2,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-2,Y,_),ficha(Color,_))).
+patternT(Color,X,Y) :- 
+	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+2,_),ficha(Color,_))) |
+	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-2,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+2,Y,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-2,Y,_),ficha(Color,_))).
 
 	
-patternSquare(Color,X,Y,StartsAtX,StartAtY) :- 
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y+1,_),ficha(Color,_))) |
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_))) | 
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_))) | 
-	(tablero(celda(X-1,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_))).	
+patternSquare(Color,X,Y) :- 
+	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y+1,_),ficha(Color,_))) |
+	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X-1,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_))).	
 	
-pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) :- 
-	(tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+3,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-3,_),ficha(Color,_))) | 
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_))) | 
-	(tablero(celda(X,Y-2,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+1,_),ficha(Color,_))).
+pattern4inLineH(Color,X,Y) :- 
+	(virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+3,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-3,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+2,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X,Y-2,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & 
+	virtualTablero(celda(X,Y+1,_),ficha(Color,_))).
 
-pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) :- 
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+3,Y,_),ficha(Color,_))) |
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-3,Y,_),ficha(Color,_))) | 
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_))) | 
-	(tablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+1,Y,_),ficha(Color,_))).
+pattern4inLineW(Color,X,Y) :- 
+	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+3,Y,_),ficha(Color,_))) |
+	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-3,Y,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+2,Y,_),ficha(Color,_))) | 
+	(virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & 
+	virtualTablero(celda(X+1,Y,_),ficha(Color,_))).
 	
 	
 //Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patr?n
 pattern3inLineW(Color,X,Y) :- 
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_))) | 
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X-2,Y,_),ficha(Color,_))) | 
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X+1,Y,_),ficha(Color,_))).
+	(virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & virtualTablero(celda(X+2,Y,_),ficha(Color,_)) &
+	.print(virtualTablero(celda(X,Y,_),ficha(Color,_))) &
+	.print(virtualTablero(celda(X+1,Y,_),ficha(Color,_))) &
+	.print(virtualTablero(celda(X+2,Y,_),ficha(Color,_)))
+	) | 
+	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & virtualTablero(celda(X-2,Y,_),ficha(Color,_)) & 
+	.print("Empezamos el 3 en lï¿½nea2: ",Color,", ",X,", ",Y)) | 
+	(virtualTablero(celda(X-1,Y,_),ficha(Color,_)) & virtualTablero(celda(X+1,Y,_),ficha(Color,_)) & 
+	.print("Empezamos el 3 en lï¿½nea3: ",Color,", ",X,", ",Y)).
 
-pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :- 
-	(tablero(celda(X,Y+1,_),ficha(Color,_)) & tablero(celda(X,Y+2,_),ficha(Color,_))) |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y-2,_),ficha(Color,_))) |  
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y+1,_),ficha(Color,_))).
+pattern3inLineH(Color,X,Y) :- 
+	(virtualTablero(celda(X,Y+1,_),ficha(Color,_)) & virtualTablero(celda(X,Y+2,_),ficha(Color,_))) |
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & virtualTablero(celda(X,Y-2,_),ficha(Color,_))) |  
+	(virtualTablero(celda(X,Y-1,_),ficha(Color,_)) & virtualTablero(celda(X,Y+1,_),ficha(Color,_))).
 
 	
 
@@ -171,9 +177,18 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 
 //Realizacion de la jugada
-+!realizarJugada  <- 
++!realizarJugada  <-
+					.findall(virtualTablero(X,Y),virtualTablero(X,Y),ListaVirt);
+					for ( .member(virtualTablero(X,Y),ListaVirt) ) {
+						-virtualTablero(X,Y);
+					};
+					.findall(tablero(X1,Y1),tablero(X1,Y1),Lista);
+					for ( .member(tablero(X1,Y1),Lista) ) {
+						+virtualTablero(X1,Y1);
+					 };
 					+pensarJugada;
 					-pensarJugada;
+					 			 
 					?cordX(X);
 					?cordY(Y);
 					?dirMax(Dir);
@@ -193,7 +208,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 			?puntos(Puntos);
 			?direction(Dir);
 			?puntosMax(PuntosMax);
-			.print(Puntos);
 			if(Puntos > PuntosMax){
 				-+cordX(V);                          
 				-+cordY(W);            
@@ -288,12 +302,12 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		}
 	}.
 	
-+comprobarUp(X,Y): tablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp)) & tablero(celda(X,Y,_),ficha(Color,Tipo)) <-
++comprobarUp(X,Y): virtualTablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo)) <-
 
-		-tablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp));
-		-tablero(celda(X,Y,_),ficha(Color,Tipo));
-		+tablero(celda(X,Y-1,0),ficha(Color,Tipo));
-		+tablero(celda(X,Y,0),ficha(ColorUp,TipoUp));
+		-virtualTablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp));
+		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
+		+virtualTablero(celda(X,Y-1,0),ficha(Color,Tipo));
+		+virtualTablero(celda(X,Y,0),ficha(ColorUp,TipoUp));
 		
 		?comprobarPatrones(ColorUp,X,Y,PuntosUp1);
 		?comprobarPatrones(Color,X,Y-1,PuntosUp2);
@@ -301,17 +315,17 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		PuntosUp = PuntosUp1 + PuntosUp2;
 		-+puntosUp(PuntosUp);
 		
-		-tablero(celda(X,Y-1,_),ficha(Color,Tipo));
-		-tablero(celda(X,Y,_),ficha(ColorUp,TipoUp));
-		+tablero(celda(X,Y-1,0),ficha(ColorUp,TipoUp));
-		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-virtualTablero(celda(X,Y-1,_),ficha(Color,Tipo));
+		-virtualTablero(celda(X,Y,_),ficha(ColorUp,TipoUp));
+		+virtualTablero(celda(X,Y-1,0),ficha(ColorUp,TipoUp));
+		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
 	
-+comprobarDown(X,Y) : tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-		
++comprobarDown(X,Y) : virtualTablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo))<-		
 
-		-tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown));
-		-tablero(celda(X,Y,_),ficha(Color,Tipo));
-		+tablero(celda(X,Y+1,0),ficha(Color,Tipo));
-		+tablero(celda(X,Y,0),ficha(ColorDown,TipoDown));
+		-virtualTablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown));
+		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
+		+virtualTablero(celda(X,Y+1,0),ficha(Color,Tipo));
+		+virtualTablero(celda(X,Y,0),ficha(ColorDown,TipoDown));
 		
 		?comprobarPatrones(ColorDown,X,Y,PuntosDown1);
 		?comprobarPatrones(Color,X,Y+1,PuntosDown2);
@@ -319,35 +333,38 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		PuntosDown = PuntosDown1 + PuntosDown2;
 		-+puntosDown(PuntosDown);
 		
-		-tablero(celda(X,Y+1,_),ficha(Color,Tipo));
-		-tablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
-		+tablero(celda(X,Y+1,0),ficha(ColorDown,TipoDown));
-		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-virtualTablero(celda(X,Y+1,_),ficha(Color,Tipo));
+		-virtualTablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
+		+virtualTablero(celda(X,Y+1,0),ficha(ColorDown,TipoDown));
+		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
 		
-+comprobarRight(X,Y) : tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
++comprobarRight(X,Y) : virtualTablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo))<-
 		
-		-tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight));
-		-tablero(celda(X,Y,_),ficha(Color,Tipo));
-		+tablero(celda(X+1,Y,0),ficha(Color,Tipo));
-		+tablero(celda(X,Y,0),ficha(ColorRight,TipoRight));
+		-virtualTablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight));
+		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
+		+virtualTablero(celda(X+1,Y,0),ficha(Color,Tipo));
+		+virtualTablero(celda(X,Y,0),ficha(ColorRight,TipoRight));
 		
-		?comprobarPatrones(ColorRight,X,Y,PuntosRight1);
+		
+		?comprobarPatrones(ColorRight,X,Y,PuntosRight1);	
 		?comprobarPatrones(Color,X+1,Y,PuntosRight2);
+		
+		
 		
 		PuntosRight = PuntosRight1 + PuntosRight2;
 		-+puntosRight(PuntosRight);
 		
-		-tablero(celda(X+1,Y,_),ficha(Color,Tipo));
-		-tablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
-		+tablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
-		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-virtualTablero(celda(X+1,Y,_),ficha(Color,Tipo));
+		-virtualTablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
+		+virtualTablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
+		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
 
-+comprobarLeft(X,Y) : tablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
++comprobarLeft(X,Y) : virtualTablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft)) & virtualTablero(celda(X,Y,_),ficha(Color,Tipo))<-
 		
-		-tablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft));
-		-tablero(celda(X,Y,_),ficha(Color,Tipo));
-		+tablero(celda(X-1,Y,0),ficha(Color,Tipo));
-		+tablero(celda(X,Y,0),ficha(ColorLeft,TipoLeft));
+		-virtualTablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft));
+		-virtualTablero(celda(X,Y,_),ficha(Color,Tipo));
+		+virtualTablero(celda(X-1,Y,0),ficha(Color,Tipo));
+		+virtualTablero(celda(X,Y,0),ficha(ColorLeft,TipoLeft));
 		
 		?comprobarPatrones(ColorLeft,X,Y,PuntosLeft1);
 		?comprobarPatrones(Color,X-1,Y,PuntosLeft2);
@@ -355,10 +372,10 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		PuntosLeft = PuntosLeft1 + PuntosLeft2;
 		-+puntosLeft(PuntosLeft);
 		
-		-tablero(celda(X-1,Y,_),ficha(Color,Tipo));  
-		-tablero(celda(X,Y,_),ficha(ColorLeft,TipoLeft));
-		+tablero(celda(X-1,Y,0),ficha(ColorLeft,TipoLeft));
-		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+		-virtualTablero(celda(X-1,Y,_),ficha(Color,Tipo));  
+		-virtualTablero(celda(X,Y,_),ficha(ColorLeft,TipoLeft));
+		+virtualTablero(celda(X-1,Y,0),ficha(ColorLeft,TipoLeft));
+		+virtualTablero(celda(X,Y,0),ficha(Color,Tipo)).
 	
 //Movimiento realizado correctamente							
 +valido[source(judge)] <- .print("He hecho una buena jugada!").

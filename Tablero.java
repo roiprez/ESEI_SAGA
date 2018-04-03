@@ -29,8 +29,7 @@ public class Tablero extends Environment {
   private TableroModel model;
   private TableroView  view;
 
-  String [][] steakType = new String[GSize][GSize]; // --- TODO ---
-  String label = "";
+  String [][] steakType = new String[GSize][GSize];
 
   @Override
   public void init(String[] args) {
@@ -62,21 +61,22 @@ public class Tablero extends Environment {
           int x2 = (int)((NumberTerm)message.getTerm(4)).solve();
           int y2 = (int)((NumberTerm)message.getTerm(5)).solve();
           model.exchange(c1,x1,y1,c2,x2,y2);
-          //view.repaint(); //view.update(); //--- TODO --- update() vs repaint()
+          view.repaint(); //view.update(); //--- TODO --- update() vs repaint()
           break;
           case("delete"):
           int c = (int)((NumberTerm)message.getTerm(0)).solve();
           int x = (int)((NumberTerm)message.getTerm(1)).solve();
           int y = (int)((NumberTerm)message.getTerm(2)).solve();
           model.delete(c,x,y);
-          //view.repaint(); //view.update();
+          view.repaint(); //view.update();
           break;
           case("put"):
           c = (int)((NumberTerm)message.getTerm(0)).solve();
           x = (int)((NumberTerm)message.getTerm(1)).solve();
           y = (int)((NumberTerm)message.getTerm(2)).solve();
-          model.put(c,x,y);
-          //view.repaint(); //view.update();
+          String t = message.getTerm(3).toString();
+          model.put(c,x,y,t);
+          view.repaint(); //view.update();
           break;
         }
       } else { //Recepcion de un mensaje de otro agente que no sea el juez
@@ -100,6 +100,7 @@ public class Tablero extends Environment {
         int color = 16;
         for(int i = 0; i < GSize; i++){
           for(int j = 0; j < GSize; j++){
+            steakType[i][j]="in";
             add(color,i,j); //Se anhade la ficha generada al tablero
             int judgeColor = getJudgeColor(color);
             addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))"));//Le pasa al juez la información del tablero // --- TODO --- Generar tipo de ficha aleatorio
@@ -113,6 +114,9 @@ public class Tablero extends Environment {
       }
 
       void exchange(int c1, int x1, int y1, int c2, int x2, int y2) throws Exception { // --- TODO ---
+        String aux = steakType[x1][y1];
+        steakType[x1][y1] = steakType[x2][y2];
+        steakType[x2][y2] = aux;
         int codColor1 = getEnvironmentColor(c1);
         int codColor2 = getEnvironmentColor(c2);
         set(codColor2,x1,y1);
@@ -120,11 +124,13 @@ public class Tablero extends Environment {
       }
 
       void delete(int color,int x, int y) throws Exception { // --- TODO ---
+        steakType[x][y]="";
         int codColor = getEnvironmentColor(color);
         remove(codColor,x,y);
       }
 
-      void put(int c, int x, int y) throws Exception {
+      void put(int c, int x, int y,String t) throws Exception {
+        steakType[x][y]=t;
 				add(getEnvironmentColor(c),x,y); //Se anhade la ficha generada al tablero
       }
 
@@ -191,29 +197,47 @@ public class Tablero extends Environment {
 
       public TableroView(TableroModel model) {
         super(model, "Tablero", 400);
-        defaultFont = new Font("Arial", Font.BOLD, 18);
+        defaultFont = new Font("Arial", Font.BOLD, 12);
         setVisible(true);
         repaint();
       }
 
       @Override
       public void draw(Graphics g, int x, int y, int object) {
-        switch (object) {
-          case Tablero.BLUESTEAK: drawSteak(g, x, y, Color.blue, label);  break;
-          case Tablero.REDSTEAK: drawSteak(g, x, y, Color.red, label);  break;
-          case Tablero.GREENSTEAK: drawSteak(g, x, y, Color.green, label);  break;
-          case Tablero.GRAYSTEAK: drawSteak(g, x, y, Color.gray, label);  break;
-          case Tablero.ORANGESTEAK: drawSteak(g, x, y, Color.orange, label);  break;
-          case Tablero.MAGENTASTEAK: drawSteak(g, x, y, Color.magenta, label);  break;
-        };
+        if(steakType[x][y].equals("in")){
+          switch (object) {
+            case Tablero.BLUESTEAK: drawSteak(g, x, y, Color.blue);  break;
+            case Tablero.REDSTEAK: drawSteak(g, x, y, Color.red);  break;
+            case Tablero.GREENSTEAK: drawSteak(g, x, y, Color.green);  break;
+            case Tablero.GRAYSTEAK: drawSteak(g, x, y, Color.gray);  break;
+            case Tablero.ORANGESTEAK: drawSteak(g, x, y, Color.orange);  break;
+            case Tablero.MAGENTASTEAK: drawSteak(g, x, y, Color.magenta);  break;
+          }
+        }
+        else{
+          switch (object) {
+            case Tablero.BLUESTEAK: drawSpecialSteak(g, x, y, Color.blue);  break;
+            case Tablero.REDSTEAK: drawSpecialSteak(g, x, y, Color.red);  break;
+            case Tablero.GREENSTEAK: drawSpecialSteak(g, x, y, Color.green);  break;
+            case Tablero.GRAYSTEAK: drawSpecialSteak(g, x, y, Color.gray);  break;
+            case Tablero.ORANGESTEAK: drawSpecialSteak(g, x, y, Color.orange);  break;
+            case Tablero.MAGENTASTEAK: drawSpecialSteak(g, x, y, Color.magenta);  break;
+          }
+        }
       }
 
-      public void drawSteak(Graphics g, int x, int y, Color c, String label) {
+      public void drawSteak(Graphics g, int x, int y, Color c) {
         g.setColor(c);
         g.fillOval(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
-        g.setColor(Color.black);
-        drawString(g,x,y,defaultFont,label); // --- TODO ---
+      }
 
+      public void drawSpecialSteak(Graphics g, int x, int y, Color c) {
+        g.setColor(c);
+        g.fillOval(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
+        g.setColor(Color.lightGray);
+        g.fillOval(x * cellSizeW + 10, y * cellSizeH + 10, cellSizeW - 20, cellSizeH - 20);
+        g.setColor(Color.black);
+        drawString(g,x,y,defaultFont,steakType[x][y]); // --- TODO ---
       }
     } //End of Class [Tablero View]
 
