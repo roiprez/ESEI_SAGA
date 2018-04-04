@@ -23,6 +23,10 @@ jugadorDescalificado(player2,0).
 
 recursivityFlag(1). //Flag utilizadop como herramienta para implentar un mecanismo de recursividad en el algoritmo de explosion-gravedad-rellenado
 explosionFlag(1). // Cuando el jugador provoca directamente una explosion, el flag se activa. Si las explosiones se producen por caidas, permanece desactivado.
+dualExplosionFlag(0).
+
+points(player1,0).
+points(player2,0).
 
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
 movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
@@ -48,13 +52,13 @@ randomType(RandomNumber,Type):-
 	| (RandomNumber == 4 & Type = co).
 
 //Duenho de la jugada
-plNumb(A,PlNumb):-
-	(A == player1 & PlNumb = 1) | (A == player2 & PlNumb = 2).
+plNumb(A,PlNumb):-                                                                                                                                                                                                                                                 
+	(A == player1 & PlNumb = 1) | (A == player2 & PlNumb = 2). 
 
 
-//Calculo de coordenadas para un movimiento
+//Calculo de coordenadas para un movimiento                                                            
 nextPosition(P1,P2,Dir,NX,NY):-
-	(
+	(                                                                                              
 	(Dir == "up" & NX = P1 & NY= (P2 - 1)) |
 	(Dir == "down" & NX = P1 & NY = (P2 + 1)) |
 	(Dir == "right" & NX = (P1 + 1) & NY = P2) |
@@ -65,7 +69,7 @@ nextPosition(P1,P2,Dir,NX,NY):-
 //Reconocimiento de patrones
 //Los Patrones que devuelven mas puntos son los primeros.
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
-	(pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
+	((pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
 	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
 	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
 	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
@@ -73,7 +77,7 @@ comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
 	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
 	(pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineW" & Direction="none") |
 	(pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "3inLineH" & Direction="none") | 
-	(Pattern = "none" & StartsAtX = X & StartAtY = Y & Direction="none").
+	(Pattern = "none" & StartsAtX = X & StartAtY = Y & Direction="none")).
 
 	
 pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) :- 
@@ -203,7 +207,9 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Reconocimiento de posicion vacia bajo una ficha para el algoritmo de caida     // --- TODO --- Caida en diagonal/horizontal
 emptyUnder(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X,Y+1,_),e). 
 
-//Correspondencia entre el patrón que explosiona y la ficha especial que se genera
+//Correspondencia entre el patrÃ³n que explosiona y la ficha especial que se genera
+specialSteak("3inLineH",none).
+specialSteak("3inLineW",none).
 specialSteak("4inLineH",ip).  
 specialSteak("4inLineW",ip). 
 specialSteak("5inLineH",ct). 
@@ -211,7 +217,13 @@ specialSteak("5inLineW",ct).
 specialSteak("Square",gs).
 specialSteak("T",co).  
 
-                                         
+//Puntos por generacion de ficha
+generationPoints(in,0).
+generationPoints(ip,2).   
+generationPoints(gs,4).   
+generationPoints(co,6).   
+generationPoints(ct,8).   
+
 
 
                              
@@ -419,6 +431,7 @@ specialSteak("T",co).
 //Analisis del movimiento solicitado por un jugador
 //Movimiento correcto
 +intercambiarFichas(X1,Y1,Dir,P) : nextPosition(X1,Y1,Dir,X2,Y2) & plNumb(P,PlNumb) <- 							
+								+direction(Dir);// ---
 								-tablero(celda(X1,Y1,0),ficha(C1,TipoFicha1));
 								-tablero(celda(X2,Y2,0),ficha(C2,TipoFicha2));                                                                                                                              																                                   
 								+tablero(celda(X2,Y2,0),ficha(C1,TipoFicha1)); 
@@ -427,11 +440,12 @@ specialSteak("T",co).
 								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")");
 								.wait(250); //--- TODO --- Ajusta la velocidad del intercambio de fichas
 								
-								-+recursivityFlag(1);//Deteción y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado            
+								-+recursivityFlag(1);//DeteciÃ³n y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado            
 								-+explosionFlag(1);
-								+fullPatternMatch(X1,Y1,X2,Y2); //Para poder generar fichas especiales en las explosiones, es necesario saber la ficha que se ha movido, de ahí los parámetros  
+								-+dualExplosionFlag(0);
+								+fullPatternMatch(X1,Y1,X2,Y2); //Para poder generar fichas especiales en las explosiones, es necesario saber la ficha que se ha movido, de ahÃ­ los parÃ¡metros  
 								-fullPatternMatch(X1,Y1,X2,Y2);
-								                  
+								-direction(Dir); // ---                
 								 //.wait(750);  //--- TODO --- Ajusta la velocidad del intercambio de fichas								 
 								                          
 								 +updatePlayersTableroBB; //Actualizacion de la base del conocimiento de los players tras las la actualizacion del tablero
@@ -441,7 +455,7 @@ specialSteak("T",co).
 
 
 
-								
+								                                         
 								
 								    
 //Deteccion de patrones en todo el tablero
@@ -516,7 +530,7 @@ specialSteak("T",co).
 					-tablero(celda(X,0,_),e);     
 					+tablero(celda(X,0,0),ficha(Color,in)).                                                                  
 
-//Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero después de que el jugador realice movimiento
+//Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero despuÃ©s de que el jugador realice movimiento
 +updatePlayersTableroBB <-   
 			.send(player1,tell,deleteTableroBB);
 			.send(player2,tell,deleteTableroBB);
@@ -532,33 +546,63 @@ specialSteak("T",co).
 	if(Pattern == "3inLineH"){                                       
 		delete(Color,StartsAtX,StartsAtY);	                                                     
 		delete(Color,StartsAtX,StartsAtY+1);
-		delete(Color,StartsAtX,StartsAtY+2);  
+		delete(Color,StartsAtX,StartsAtY+2);
+		
+		+explosion(StartsAtX,StartsAtY);   
+		+explosion(StartsAtX,StartsAtY+1);              
+		+explosion(StartsAtX,StartsAtY+2);
+        -explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY+2);    
+		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);                       
 		-tablero(celda(StartsAtX,StartsAtY+1,_),_);                                                 
 		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
 		+tablero(celda(StartsAtX,StartsAtY,0),e);  // "e" aparece cuando en una celda no hay ninguna ficha
 		+tablero(celda(StartsAtX,StartsAtY+1,0),e);         
-		+tablero(celda(StartsAtX,StartsAtY+2,0),e);	                                                    
-		}                 
+		+tablero(celda(StartsAtX,StartsAtY+2,0),e);	
+		
+
+		}                                   
 	if(Pattern == "3inLineW"){	                                             
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX+1,StartsAtY);                 
-		delete(Color,StartsAtX+2,StartsAtY);		  
+		delete(Color,StartsAtX+2,StartsAtY);
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX+1,StartsAtY);
+		+explosion(StartsAtX+2,StartsAtY);
+        -explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX+1,StartsAtY);
+		-explosion(StartsAtX+2,StartsAtY); 
+		
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);    
 		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
 		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
 		+tablero(celda(StartsAtX,StartsAtY,0),e);    
 		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
-	}                                               
+		+tablero(celda((StartsAtX+2),StartsAtY,0),e); 
+
+}                                               
 	if(Pattern == "4inLineH"){
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
 		delete(Color,StartsAtX,StartsAtY+3);
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX,StartsAtY+1);
+		+explosion(StartsAtX,StartsAtY+2);
+		+explosion(StartsAtX,StartsAtY+3);
+        -explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY+2);
+		-explosion(StartsAtX,StartsAtY+3);
+
+
 		//Borramos en la base del conocimiento
 		-tablero(celda(StartsAtX,StartsAtY,_),_);
 		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
@@ -568,12 +612,9 @@ specialSteak("T",co).
 		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
 		+tablero(celda(StartsAtX,StartsAtY+2,0),e);
 		+tablero(celda(StartsAtX,StartsAtY+3,0),e);
-		+setMovedSteak(X1,Y1);
-		-setMovedSteak(X1,Y1);
-		+setMovedSteak(X2,Y2);          
-		-setMovedSteak(X2,Y2);	
-		+generateSpecialSteak(Pattern,Color);
-		-generateSpecialSteak(Pattern,Color);
+		
+
+
 	}                                                    
 	if(Pattern == "4inLineW"){
 		//Borramos en el modelo
@@ -582,6 +623,16 @@ specialSteak("T",co).
 		delete(Color,StartsAtX+2,StartsAtY);
 		delete(Color,StartsAtX+3,StartsAtY);
 		//Borramos en la base del conocimiento		
+
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX+1,StartsAtY);
+		+explosion(StartsAtX+2,StartsAtY);
+		+explosion(StartsAtX+3,StartsAtY); 
+        -explosion(StartsAtX,StartsAtY); 
+		-explosion(StartsAtX+1,StartsAtY);
+		-explosion(StartsAtX+2,StartsAtY); 
+		-explosion(StartsAtX+3,StartsAtY); 
+
 		-tablero(celda(StartsAtX,StartsAtY,_),_);       
 		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
 		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
@@ -590,20 +641,32 @@ specialSteak("T",co).
 		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
 		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
 		+tablero(celda((StartsAtX+3),StartsAtY,0),e);
-		+setMovedSteak(X1,Y1);
-		-setMovedSteak(X1,Y1);
-		+setMovedSteak(X2,Y2);          
-		-setMovedSteak(X2,Y2);	
-		+generateSpecialSteak(Pattern,Color);
-		-generateSpecialSteak(Pattern,Color);
-	}                               
+
+
+
+	
+		
+	}                                           
 	if(Pattern == "5inLineH"){ 
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
 		delete(Color,StartsAtX,StartsAtY+3);
-		delete(Color,StartsAtX,StartsAtY+4); 
+		delete(Color,StartsAtX,StartsAtY+4);
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX,StartsAtY+1);
+		+explosion(StartsAtX,StartsAtY+2);
+		+explosion(StartsAtX,StartsAtY+3);
+		+explosion(StartsAtX,StartsAtY+4);  
+
+        -explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY+2);
+		-explosion(StartsAtX,StartsAtY+3);
+		-explosion(StartsAtX,StartsAtY+4);
+		
 		//Borramos en la base del conocimiento
 		-tablero(celda(StartsAtX,StartsAtY,_),_);
 		-tablero(celda(StartsAtX,StartsAtY+1,_),_); 
@@ -615,12 +678,10 @@ specialSteak("T",co).
 		+tablero(celda(StartsAtX,StartsAtY+2,0),e);         
 		+tablero(celda(StartsAtX,StartsAtY+3,0),e);
 		+tablero(celda(StartsAtX,StartsAtY+4,0),e);
-		+setMovedSteak(X1,Y1);
-		-setMovedSteak(X1,Y1);
-		+setMovedSteak(X2,Y2);          
-		-setMovedSteak(X2,Y2);	
-		+generateSpecialSteak(Pattern,Color);
-		-generateSpecialSteak(Pattern,Color);
+
+
+
+				
 	}
 	if(Pattern == "5inLineW"){		
 		//Borramos en el modelo
@@ -629,6 +690,20 @@ specialSteak("T",co).
 		delete(Color,StartsAtX+2,StartsAtY);
 		delete(Color,StartsAtX+3,StartsAtY);
 		delete(Color,StartsAtX+4,StartsAtY);
+		
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX+1,StartsAtY);
+		+explosion(StartsAtX+2,StartsAtY);
+		+explosion(StartsAtX+3,StartsAtY); 
+		+explosion(StartsAtX+4,StartsAtY); 
+        -explosion(StartsAtX,StartsAtY); 
+		-explosion(StartsAtX+1,StartsAtY);
+		-explosion(StartsAtX+2,StartsAtY); 
+		-explosion(StartsAtX+3,StartsAtY);
+		-explosion(StartsAtX+4,StartsAtY); 	
+		
+		
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);        
 		-tablero(celda((StartsAtX+1),StartsAtY,_),_);                                                            
@@ -640,44 +715,58 @@ specialSteak("T",co).
 		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
 		+tablero(celda((StartsAtX+3),StartsAtY,0),e);
 		+tablero(celda((StartsAtX+4),StartsAtY,0),e);
-		+setMovedSteak(X1,Y1);
-		-setMovedSteak(X1,Y1);
-		+setMovedSteak(X2,Y2);          
-		-setMovedSteak(X2,Y2);	
-		+generateSpecialSteak(Pattern,Color);
-		-generateSpecialSteak(Pattern,Color);
+
+			
+ 		
+		
+		
 	}
 	if(Pattern == "Square"){    // --- TODO --- Revisar que puedan ser 4 o mas formando una cuadrado                     
-	  		//Borramos en el modelo
+	  	//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);	
 		delete(Color,StartsAtX+1,StartsAtY);                                                  
 		delete(Color,StartsAtX,StartsAtY+1);	
-		delete(Color,StartsAtX+1,StartsAtY+1);  
+		delete(Color,StartsAtX+1,StartsAtY+1);
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX+1,StartsAtY); 
+		+explosion(StartsAtX,StartsAtY+1); 
+		+explosion(StartsAtX+1,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX+1,StartsAtY); 
+		-explosion(StartsAtX,StartsAtY+1); 
+		-explosion(StartsAtX+1,StartsAtY+1);
+		
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);        
 		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
 		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-		-tablero(celda(StartsAtX+1,StartsAtY+1,_),_);
+		-tablero(celda(StartsAtX+1,StartsAtY+1,_),_); 
 		+tablero(celda(StartsAtX,StartsAtY,0),e);       
 		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY+1,0),e); 
 		+tablero(celda(StartsAtX+1,StartsAtY+1,0),e);
-		+setMovedSteak(X1,Y1);
-		-setMovedSteak(X1,Y1);
-		+setMovedSteak(X2,Y2);          
-		-setMovedSteak(X2,Y2);	
-		+generateSpecialSteak(Pattern,Color);
-		-generateSpecialSteak(Pattern,Color);
+		
+		
+
+
 	}
 	if(Pattern == "T"){
 		+handleT(Color,StartsAtX,StartsAtY,Direction,Pattern);
 		-handleT(Color,StartsAtX,StartsAtY,Direction,Pattern);
-	} 
+	}
+	//Bloque refactorizado
+	+setMovedSteak(X1,Y1,Pattern);       
+	-setMovedSteak(X1,Y1,Pattern);
+	+setMovedSteak(X2,Y2,Pattern);       
+	-setMovedSteak(X2,Y2,Pattern);	     
+	+generateSpecialSteak(Pattern,Color);
+	-generateSpecialSteak(Pattern,Color);	 
+	
 	.wait(350). //Tiempo de espera tras una explosion
 	
 	
-+handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) <-
-	//-handleT(Color,StartsAtX,StartsAtY,Direction) // --- ??? 
++handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) <-     
 	if(Direction == "standing"){                 
 		//Borramos en el modelo
 		delete(Color,StartsAtX,StartsAtY);
@@ -685,6 +774,17 @@ specialSteak("T",co).
 		delete(Color,StartsAtX-1,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX+1,StartsAtY);
+		+explosion(StartsAtX-1,StartsAtY);
+		+explosion(StartsAtX,StartsAtY+1);
+		+explosion(StartsAtX,StartsAtY+2);
+		-explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX+1,StartsAtY);
+		-explosion(StartsAtX-1,StartsAtY);
+		-explosion(StartsAtX,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY+2);
  
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);        
@@ -696,7 +796,7 @@ specialSteak("T",co).
 		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
 		+tablero(celda(StartsAtX-1,StartsAtY,0),e);
 		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
-		+tablero(celda(StartsAtX,StartsAtY+2,0),e);	 
+		+tablero(celda(StartsAtX,StartsAtY+2,0),e);
 	}
 	if(Direction == "upside-down"){
 		delete(Color,StartsAtX,StartsAtY);
@@ -705,17 +805,28 @@ specialSteak("T",co).
 		delete(Color,StartsAtX,StartsAtY-1);
 		delete(Color,StartsAtX,StartsAtY-2);
 		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX+1,StartsAtY);
+		+explosion(StartsAtX-1,StartsAtY);
+		+explosion(StartsAtX,StartsAtY-1);
+		+explosion(StartsAtX,StartsAtY-2);
+		-explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX+1,StartsAtY);
+		-explosion(StartsAtX-1,StartsAtY);
+		-explosion(StartsAtX,StartsAtY-1);
+		-explosion(StartsAtX,StartsAtY-2);
+		
 		//Borramos en la base del conocimiento		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);        
+		-tablero(celda(StartsAtX,StartsAtY,_),_);                                                                       
 		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
 		-tablero(celda(StartsAtX-1,StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY-1,_),_);
+		-tablero(celda(StartsAtX,StartsAtY-1,_),_);                                                        
 		-tablero(celda(StartsAtX,StartsAtY-2,_),_);	
 		+tablero(celda(StartsAtX,StartsAtY,0),e);        
 		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
 		+tablero(celda(StartsAtX-1,StartsAtY,0),e);
 		+tablero(celda(StartsAtX,StartsAtY-1,0),e);
-		+tablero(celda(StartsAtX,StartsAtY-2,0),e);	
+		+tablero(celda(StartsAtX,StartsAtY-2,0),e);
 	}
 	if(Direction == "pointing-right"){
 		delete(Color,StartsAtX,StartsAtY);
@@ -723,6 +834,17 @@ specialSteak("T",co).
 		delete(Color,StartsAtX,StartsAtY-1);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+2,StartsAtY);  
+		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX,StartsAtY+1);
+		+explosion(StartsAtX,StartsAtY-1);
+		+explosion(StartsAtX+1,StartsAtY);
+		+explosion(StartsAtX+2,StartsAtY);
+		-explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY-1);
+		-explosion(StartsAtX+1,StartsAtY);
+		-explosion(StartsAtX+2,StartsAtY);
 		
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);        
@@ -743,6 +865,17 @@ specialSteak("T",co).
 		delete(Color,StartsAtX-1,StartsAtY);
 		delete(Color,StartsAtX-2,StartsAtY);
 		
+		+explosion(StartsAtX,StartsAtY);
+		+explosion(StartsAtX,StartsAtY+1);
+		+explosion(StartsAtX,StartsAtY-1);
+		+explosion(StartsAtX-1,StartsAtY);
+		+explosion(StartsAtX-2,StartsAtY);
+		-explosion(StartsAtX,StartsAtY);
+		-explosion(StartsAtX,StartsAtY+1);
+		-explosion(StartsAtX,StartsAtY-1);
+		-explosion(StartsAtX-1,StartsAtY);
+		-explosion(StartsAtX-2,StartsAtY);
+		
 		//Borramos en la base del conocimiento		
 		-tablero(celda(StartsAtX,StartsAtY,_),_);        
 		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
@@ -751,37 +884,131 @@ specialSteak("T",co).
 		-tablero(celda(StartsAtX-2,StartsAtY,_),_);	
 		+tablero(celda(StartsAtX,StartsAtY,0),e);        
 		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
-		+tablero(celda(StartsAtX,StartsAtY-1,0),e);
+		+tablero(celda(StartsAtX,StartsAtY-1,0),e);                                                                                                                                                                                  
 		+tablero(celda(StartsAtX-1,StartsAtY,0),e);
-		+tablero(celda(StartsAtX-2,StartsAtY,0),e);	
-	};
-	+setMovedSteak(X1,Y1);
-	-setMovedSteak(X1,Y1);
-	+setMovedSteak(X2,Y2);             
-	-setMovedSteak(X2,Y2);	                                 
-	+generateSpecialSteak(Pattern,Color);
-	-generateSpecialSteak(Pattern,Color). 
+		+tablero(celda(StartsAtX-2,StartsAtY,0),e);
+	}.
+ 
                                          
 //Establecer celda como movida para generar sobre ella la ficha especial cuando la explosion es directamente realizada por el movimiento del jugador
-+setMovedSteak(X,Y) : explosionFlag(1) & tablero(celda(X,Y,_),e)<- 
-			-tablero(celda(X,Y,_),_);
-			+tablero(celda(X,Y,0),m).                                
++setMovedSteak(X,Y,Pattern) : explosionFlag(1) & tablero(celda(X,Y,_),e) & not specialSteak(Pattern,none)<- 
+			-tablero(celda(X,Y,_),_);                                                                          
+			+tablero(celda(X,Y,0),m);
+			-+dualExplosionFlag(1). //Aunque se active el flag, solo se percibirÃ¡ si explota otro patrÃ³n contiguo                               
 		
-//Generacion de la ficha especial acorde al patrón que le corresponde tras una explosion		
-+generateSpecialSteak(Pattern,Color) : explosionFlag(1) & tablero(celda(X,Y,_),m) & specialSteak(Pattern,Type) <- //La explosion se produjo directamente por el movimiento del jugador, y la ficha especial se debe de colocar en la ficha movida.  
+//Generacion de la ficha especial acorde al patrÃ³n que le corresponde tras una explosion		
++generateSpecialSteak(Pattern,Color) : explosionFlag(1) & tablero(celda(X,Y,_),m) & specialSteak(Pattern,Type) & not Type = none <- //La explosion se produjo directamente por el movimiento del jugador, y la ficha especial se debe de colocar en la ficha movida.  
 			put(Color,X,Y,Type);                  
 			-tablero(celda(X,Y,_),m); 
-			+tablero(celda(X,Y,0),ficha(Color,Type)).  
+			+tablero(celda(X,Y,0),ficha(Color,Type));
+			+specialStickGenerationPoints(Type);
+			-specialStickGenerationPoints(Type);          
+			?dualExplosionFlag(F);			 // --- TODO --- Solucion a problema de dos explosiones contiguas???   
+			if(F=1){
+			-tablero(celda(NX,NY,_),m);
+			-+dualExplosionFlag(0);
+			}
+			.  
 
-+generateSpecialSteak(Pattern,Color) : explosionFlag(0) & tablero(celda(X,Y,_),e) & specialSteak(Pattern,Type) <-  //La explosion se produjo de forma indirecta por la caida de fichas. La ficha especial se coloca de forma aleatoria por unificacion. 			
++generateSpecialSteak(Pattern,Color) : explosionFlag(0) & tablero(celda(X,Y,_),e) & specialSteak(Pattern,Type) & not Type = none <-  //La explosion se produjo de forma indirecta por la caida de fichas. La ficha especial se coloca de forma aleatoria por unificacion. 			
 			put(Color,X,Y,Type); 
 			-tablero(celda(X,Y,_),e);  
-			+tablero(celda(X,Y,0),ficha(Color,Type)).  
-				
+			+tablero(celda(X,Y,0),ficha(Color,Type));
+			+specialStickGenerationPoints(Type);
+			-specialStickGenerationPoints(Type).  
+
++specialStickGenerationPoints(T) : generationPoints(T,NP) & turnoActual(A) & points(A,P) <- 
+				-points(A,P);
+				+points(A,P+NP);
+				.print("+",NP). 
+
+//Gestion de exlosiones especiales y puntuaciones
++explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & turnoActual(A) & points(A,P)<- 
+			//-explosion(X,Y);
+			+specialExplosion(X,Y,C,T,D,A,P); 
+			-specialExplosion(X,Y,C,T,D,A,P).
+
++specialExplosion(X,Y,C,T,D,A,P) : T = in <-      
+    .print("+1");  
+	-points(A,P);
+    +points(A,P+1).       
+
+	
++specialExplosion(X,Y,C,T,D,A,P) : T = ip <-     //Explosion en linea segun movimiento realizado
+			.print("+2");                                                                                                   
+			-points(A,P);
+			+points(A,P+2);
+			if(D="up" | D="down"){ 
+				for( tablero(celda(X,NY,_),ficha(NC,_))){
+					//-explosion(X,NY);		
+					+explosion(X,NY);                                                                                                                                                             
+					-explosion(X,NY);	
+					-tablero(celda(X,NY,_),_);
+					+tablero(celda(X,NY,0),e); 
+					delete(NC,X,NY);
+				}                      
+			}
+			if(D="left" | D="right"){
+			     for( tablero(celda(NX,Y,_),ficha(NC,_))){
+					//-explosion(NX,Y);		
+				 	+explosion(NX,Y);
+					-explosion(NX,Y);		
+					-tablero(celda(NX,Y,_),_);
+					+tablero(celda(NX,Y,0),e);
+					delete(NC,NX,Y);
+				}                             
+			}.  
+			
++specialExplosion(X,Y,C,T,D,A,P) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY <-	 //Explosion de una ficha del mismo color
+			.print("+4");  
+			-points(A,P);  
+			+points(A,P+4);
+			+explosion(NX,NY);                     
+			-explosion(NX,NY);		                                      
+			-tablero(celda(NX,NY,_),ficha(C,_));
+			+tablero(celda(NX,NY,0),e);
+			delete(C,NX,NY). 
+			
++specialExplosion(X,Y,C,T,D,A,P) : T = co <-  			//Explosion en cuadrado 3x3  
+			.print("+6");  
+			-points(A,P);
+			+points(A,P+6);
+			//-tablero(celda(StartsAtX,StartsAtY,_),_);// --- TODO --- Es necesario por si rompe al pasar por la ficha central                      
+			for ( .range(I,-1,1) ) {
+				for ( .range(J,-1,1) ) {
+					+coExplosion(X+I,Y+J);
+					-coExplosion(X+I,Y+J);	
+				};
+			}.
+
++coExplosion(X,Y) : tablero(celda(X,Y,_),ficha(C,_)) <-
+			  +explosion(X+I,Y+J);
+			  -explosion(X+I,Y+J);
+			  -tablero(celda(X,Y,_),_);
+			  +tablero(celda(X,Y,0),e);
+			  delete(C,X,Y).
+			  
++specialExplosion(X,Y,C,T,D,A,P) : T = ct <-     //Explosion de todas las fichas de ese color           
+			.print("+8");  
+			-points(A,P);
+			+points(A,P+8);
+			for( tablero(celda(NX,NY,_),ficha(C,_))){                                        
+				 	+explosion(NX,NY);
+					-explosion(NX,NY);		
+					-tablero(celda(NX,NY,_),_);
+					+tablero(celda(NX,NY,0),e);
+					delete(C,NX,NY);
+			}.                                                                                                                                                                
+
++specialExplosion(X,Y,C,T,D,A,P) <- .print("ERROR en +specialExplosion()").
+			    
+			
+			
+                  
+
 			
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
-
 
 

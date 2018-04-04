@@ -47,7 +47,7 @@ public class Tablero extends Environment {
 
   @Override
   public boolean executeAction(String agent, Structure message) {
-    logger.info(agent + " doing: " + message); // --- TODO ---
+    //logger.info(agent + " doing: " + message); // --- TODO ---
     try {
       if (agent.equals("judge")) { //Recepcion de un mensaje procedente del juez
         String action= message.getFunctor();
@@ -61,14 +61,14 @@ public class Tablero extends Environment {
           int x2 = (int)((NumberTerm)message.getTerm(4)).solve();
           int y2 = (int)((NumberTerm)message.getTerm(5)).solve();
           model.exchange(c1,x1,y1,c2,x2,y2);
-          view.repaint(); //view.update(); //--- TODO --- update() vs repaint()
+          //view.repaint(); //view.update(); //--- TODO --- update() vs repaint()
           break;
           case("delete"):
           int c = (int)((NumberTerm)message.getTerm(0)).solve();
           int x = (int)((NumberTerm)message.getTerm(1)).solve();
           int y = (int)((NumberTerm)message.getTerm(2)).solve();
           model.delete(c,x,y);
-          view.repaint(); //view.update();
+          //view.repaint(); //view.update();
           break;
           case("put"):
           c = (int)((NumberTerm)message.getTerm(0)).solve();
@@ -76,7 +76,7 @@ public class Tablero extends Environment {
           y = (int)((NumberTerm)message.getTerm(2)).solve();
           String t = message.getTerm(3).toString();
           model.put(c,x,y,t);
-          view.repaint(); //view.update();
+          //view.repaint(); //view.update();
           break;
         }
       } else { //Recepcion de un mensaje de otro agente que no sea el juez
@@ -237,7 +237,7 @@ public class Tablero extends Environment {
         g.setColor(Color.lightGray);
         g.fillOval(x * cellSizeW + 10, y * cellSizeH + 10, cellSizeW - 20, cellSizeH - 20);
         g.setColor(Color.black);
-        drawString(g,x,y,defaultFont,steakType[x][y]); // --- TODO ---
+        drawString(g,x,y,defaultFont,steakType[x][y].toUpperCase()); // --- TODO ---
       }
     } //End of Class [Tablero View]
 

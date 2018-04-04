@@ -1,5 +1,8 @@
 // Agent player in project ESEI_SAGA.mas2j
 
+
+//Cargarse comprobación izquierda y arriba
+
 /*
 * Su objetivo es alcanzar la mayor puntiaciï¿½n posible en cada movimiento
 */
@@ -27,16 +30,18 @@ pensarJugadaAleatoria(X1,Y1,Dir):-
 	
 //Reconocimiento de patrones
 //Los Patrones que devuelven mas puntos son los primeros.
+//Meter los puntos que aportan las fichas especiales ---- TODO ----
+//T apuntando para arriba no funciona ---- TODO ----
 comprobarPatrones(Color,X,Y,Puntos) :-
-	(pattern5inLineW(Color,X,Y) & Puntos=1000) |
-	(pattern5inLineH(Color,X,Y) & Puntos=1050) |
-	(patternT(Color,X,Y) & Puntos=800) |
-	(patternSquare(Color,X,Y) & Puntos=600)|
-	(pattern4inLineW(Color,X,Y) & Puntos=400)|
-	(pattern4inLineH(Color,X,Y) & Puntos=450) |
-	(pattern3inLineW(Color,X,Y) & Puntos=200) |
-	(pattern3inLineH(Color,X,Y) & Puntos=250) | 
-	(Puntos=0).
+	((pattern5inLineW(Color,X,Y) & Puntos=5) |
+	(pattern5inLineH(Color,X,Y) & Puntos=5) |
+	(patternT(Color,X,Y) & Puntos=5) |
+	(patternSquare(Color,X,Y) & Puntos=4)|
+	(pattern4inLineW(Color,X,Y) & Puntos=4)|
+	(pattern4inLineH(Color,X,Y) & Puntos=4) |
+	(pattern3inLineW(Color,X,Y) & Puntos=3) |
+	(pattern3inLineH(Color,X,Y) & Puntos=3) | 
+	(Puntos=0)).
 
 	
 pattern5inLineH(Color,X,Y) :- 
@@ -148,15 +153,9 @@ pattern4inLineW(Color,X,Y) :-
 	
 //Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patr?n
 pattern3inLineW(Color,X,Y) :- 
-	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) &
-	.print(tablero(celda(X,Y,_),ficha(Color,_))) &
-	.print(tablero(celda(X+1,Y,_),ficha(Color,_))) &
-	.print(tablero(celda(X+2,Y,_),ficha(Color,_)))
-	) | 
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X-2,Y,_),ficha(Color,_)) & 
-	.print("Empezamos el 3 en lï¿½nea2: ",Color,", ",X,", ",Y)) | 
-	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	.print("Empezamos el 3 en lï¿½nea3: ",Color,", ",X,", ",Y)).
+	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_))) | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X-2,Y,_),ficha(Color,_))) | 
+	(tablero(celda(X-1,Y,_),ficha(Color,_)) & tablero(celda(X+1,Y,_),ficha(Color,_))).
 
 pattern3inLineH(Color,X,Y) :- 
 	(tablero(celda(X,Y+1,_),ficha(Color,_)) & tablero(celda(X,Y+2,_),ficha(Color,_))) |
@@ -188,129 +187,57 @@ pattern3inLineH(Color,X,Y) :-
 					.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),Dir));
 					.send(judge,untell,moverDesdeEnDireccion(pos(X,Y),Dir)).
 
-+pensarJugada : size(N)  <- 
++pensarJugada  <- 
 	-+puntosMax(0);
 	-+puntos(0);
 	-+direction("none");
-	for ( .range(V,0,(N-1)) ) {                                                                                              
-		for ( .range(W,0,(N-1)) ) {
-			+comprobarDireccion(V,W);
-			-comprobarDireccion(V,W);
-			
-			?puntos(Puntos);
-			?direction(Dir);
-			?puntosMax(PuntosMax);
-			if(Puntos > PuntosMax){
-				-+cordX(V);                          
-				-+cordY(W);            
-				-+puntosMax(Puntos);
-				-+dirMax(Dir);
-			}
-		}
-	}                                     
-	?puntosMax(PuntosMax);
-	if(PuntosMax == 0){
-		?pensarJugadaAleatoria(X1,Y1,Dir1);
-		-+cordX(X1);
-		-+cordY(Y1);
-		-+dirMax(Dir1);
-	}.
+	.findall(celda(X,Y,Own),tablero(celda(X,Y,Own),_),Lista);
+	+comprobarTablero(Lista,0);
+	-comprobarTablero(Lista,0);
+	.length(Lista,Length);
+	.print("Longitud de la lista: ", Length);
+	/*for ( .member(tablero(celda(X,Y,_),_),Lista) ) {  ---- TODO ----
+		+comprobarDireccion(X,Y);
+		-comprobarDireccion(X,Y);
+		+comprobarPuntos(X,Y);
+		-comprobarPuntos(X,Y); 
+	 }; */
+	+comprobarCeroPuntos;
+	-comprobarCeroPuntos.
+
++comprobarTablero(Lista,N) : .length(Lista,Length) & N<Length <-
+	.nth(N,Lista,celda(X,Y,Own));
+	+comprobarDireccion(X,Y);
+	-comprobarDireccion(X,Y);
+	+comprobarPuntos(X,Y);
+	-comprobarPuntos(X,Y);
 	
-//Problema al reasignar una variable
-+comprobarDireccion(X,Y) <-
-	
-	//Caso "up"
-	if(Y>0){
-		-+puntosUp(0);
-		+comprobarUp(X,Y);
-		-comprobarUp(X,Y);
-		
-		
-		?puntosUp(PuntosUp);
-		?puntos(Puntos1);
-		if(PuntosUp > Puntos1){
-			.print("Coordenadas: ",X,", ",Y," hacia up");
-			.print(PuntosUp);
-			.print(Puntos1);
-			-+puntos(PuntosUp);
-			-+direction("up");
-		};
-	}
+	+comprobarTablero(Lista,N+1);
+	-comprobarTablero(Lista,N+1);
+.
 
 	
-	
+//Problema al reasignar una variable
++comprobarDireccion(X,Y): Y<9 & X<9 <-
+		
 	//Caso "down"
-	if(Y<9){
-		-+puntosDown(0);
-		+comprobarDown(X,Y);
-		-comprobarDown(X,Y);
-		
-		
-		?puntosDown(PuntosDown);
-		?puntos(Puntos2);
-		if(PuntosDown > Puntos2){
-			.print("Coordenadas: ",X,", ",Y," hacia down");
-			.print(PuntosDown);
-			.print(Puntos2);
-			-+puntos(PuntosDown);
-			-+direction("down");
-		};                            
-	}
+	-+puntosDown(0);
+	+comprobarDown(X,Y);
+	-comprobarDown(X,Y);
+	
+	+comprobarPuntosDown(X,Y);
+	-comprobarPuntosDown(X,Y);                           
 	                      
 	
 	//Caso "right"
-	if(X<9){
-		-+puntosRight(0);
-		+comprobarRight(X,Y);
-		-comprobarRight(X,Y);
-		
-			
-		?puntosRight(PuntosRight);
-		?puntos(Puntos3);
-		if(PuntosRight > Puntos3){
-			.print("Coordenadas: ",X,", ",Y," hacia right");
-			.print(PuntosRight);
-			.print(Puntos3);
-			-+puntos(PuntosRight);
-			-+direction("right");
-		};
-	}                                 
+	-+puntosRight(0);
+	+comprobarRight(X,Y);
+	-comprobarRight(X,Y);
 	
-	//Caso "left"
-	if(X>0){
-		-+puntosLeft(0);
-		+comprobarLeft(X,Y);
-		-comprobarLeft(X,Y);
-		
+	+comprobarPuntosRight(X,Y);
+	-comprobarPuntosRight(X,Y);
+	.
 
-		?puntosLeft(PuntosLeft);
-		?puntos(Puntos4);
-		if(PuntosLeft > Puntos4){
-			.print("Coordenadas: ",X,", ",Y," hacia left");
-			.print(PuntosLeft);
-			.print(Puntos4);
-			-+puntos(PuntosLeft);
-			-+direction("left");
-		}
-	}.
-	
-+comprobarUp(X,Y): tablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp)) & tablero(celda(X,Y,_),ficha(Color,Tipo)) <-
-
-		-tablero(celda(X,Y-1,_),ficha(ColorUp,TipoUp));
-		-tablero(celda(X,Y,_),ficha(Color,Tipo));
-		+tablero(celda(X,Y-1,0),ficha(Color,Tipo));
-		+tablero(celda(X,Y,0),ficha(ColorUp,TipoUp));
-		
-		?comprobarPatrones(ColorUp,X,Y,PuntosUp1);
-		?comprobarPatrones(Color,X,Y-1,PuntosUp2);
-		
-		PuntosUp = PuntosUp1 + PuntosUp2;
-		-+puntosUp(PuntosUp);
-		
-		-tablero(celda(X,Y-1,_),ficha(Color,Tipo));
-		-tablero(celda(X,Y,_),ficha(ColorUp,TipoUp));
-		+tablero(celda(X,Y-1,0),ficha(ColorUp,TipoUp));
-		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
 	
 +comprobarDown(X,Y) : tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-		
 
@@ -319,11 +246,10 @@ pattern3inLineH(Color,X,Y) :-
 		+tablero(celda(X,Y+1,0),ficha(Color,Tipo));
 		+tablero(celda(X,Y,0),ficha(ColorDown,TipoDown));
 		
-		?comprobarPatrones(ColorDown,X,Y,PuntosDown1);
-		?comprobarPatrones(Color,X,Y+1,PuntosDown2);
-		
-		PuntosDown = PuntosDown1 + PuntosDown2;
-		-+puntosDown(PuntosDown);
+		?comprobarPatrones(ColorDown,X,Y,Puntos1);
+		?comprobarPatrones(Color,X,Y+1,Puntos2);
+
+		-+puntosDown(Puntos1 + Puntos2);
 		
 		-tablero(celda(X,Y+1,_),ficha(Color,Tipo));
 		-tablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
@@ -336,44 +262,70 @@ pattern3inLineH(Color,X,Y) :-
 		-tablero(celda(X,Y,_),ficha(Color,Tipo));
 		+tablero(celda(X+1,Y,0),ficha(Color,Tipo));
 		+tablero(celda(X,Y,0),ficha(ColorRight,TipoRight));
-		
-		
-		?comprobarPatrones(ColorRight,X,Y,PuntosRight1);	
-		?comprobarPatrones(Color,X+1,Y,PuntosRight2);
-		
-		
-		
-		PuntosRight = PuntosRight1 + PuntosRight2;
-		-+puntosRight(PuntosRight);
+				
+		?comprobarPatrones(ColorRight,X,Y,Puntos1);	
+		?comprobarPatrones(Color,X+1,Y,Puntos2);
+			
+		-+puntosRight(Puntos1 + Puntos2);
 		
 		-tablero(celda(X+1,Y,_),ficha(Color,Tipo));
 		-tablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
 		+tablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
 		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+		
++comprobarPuntosDown(X,Y) : puntosDown(PuntosDown) & puntos(Puntos) & PuntosDown > Puntos <-
+		.print("Coordenadas: ",X,", ",Y," hacia down");
+		.print("Había: ",Puntos);
+		.print("Con esta jugada hago: ",PuntosDown);
+		//SOBRA  ---- DEBUG ----
+		if(PuntosDown == 5){
+			.wait(10000);
+		}
+		-+puntos(PuntosDown);
+		-+direction("down");
+		.
 
-+comprobarLeft(X,Y) : tablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
-		
-		-tablero(celda(X-1,Y,_),ficha(ColorLeft,TipoLeft));
-		-tablero(celda(X,Y,_),ficha(Color,Tipo));
-		+tablero(celda(X-1,Y,0),ficha(Color,Tipo));
-		+tablero(celda(X,Y,0),ficha(ColorLeft,TipoLeft));
-		
-		?comprobarPatrones(ColorLeft,X,Y,PuntosLeft1);
-		?comprobarPatrones(Color,X-1,Y,PuntosLeft2);
-		
-		PuntosLeft = PuntosLeft1 + PuntosLeft2;
-		-+puntosLeft(PuntosLeft);
-		
-		-tablero(celda(X-1,Y,_),ficha(Color,Tipo));  
-		-tablero(celda(X,Y,_),ficha(ColorLeft,TipoLeft));
-		+tablero(celda(X-1,Y,0),ficha(ColorLeft,TipoLeft));
-		+tablero(celda(X,Y,0),ficha(Color,Tipo)).
++comprobarPuntosRight(X,Y) : puntosRight(PuntosRight) & puntos(Puntos) & PuntosRight > Puntos <-
+		.print("Coordenadas: ",X,", ",Y," hacia right");
+		.print("Había: ",Puntos);
+		.print("Con esta jugada hago: ",PuntosRight);
+		//SOBRA  ---- DEBUG ----
+		if(PuntosRight == 5){
+			.wait(10000);
+		}
+		-+puntos(PuntosRight);
+		-+direction("right");
+		.
+
++comprobarPuntos(X,Y) : puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax <-
+				-+cordX(X);                          
+				-+cordY(Y);            
+				-+puntosMax(Puntos);
+				-+dirMax(Dir).
+	
++comprobarCeroPuntos: puntosMax(N) & N = 0 & pensarJugadaAleatoria(X,Y,Dir) <-
+		-+cordX(X);
+		-+cordY(Y);
+		-+dirMax(Dir).
 		
 //Borrado de todas las creencias sobre el tablero para poder hacer una actualizacion limpia /* CODIGO NUEVO */ 
 +deleteTableroBB [source(judge)]<-
 				for ( tablero(X,Y) ) {
 					-tablero(X,Y); 
 					}.  
+
+//No borra todo el tablero  ---- DEBUG ----
+/*+deleteTableroBB [source(judge)] <-
+				.findall(tablero(X,Y),tablero(X,Y),Lista);
+				-deleteTablero(Lista,0).  
+				
++deleteTablero(Lista,N) : .length(Lista,Length) & N<Length <-
+	.nth(N,Lista,tablero(X,Y));
+	-tablero(X,Y);
+	
+	+deleteTablero(Lista,N+1);
+	-deleteTablero(Lista,N+1);        
+.*/
                                                                 
 //Recepcion de la informacion de una posicion del tablero     /* CODIGO NUEVO */
 +tablero(Celda,Ficha)[source(judge)] <-  //Actua como interface para que las creencias contenidas en la base del conocimiento sean "self" y evitar posibles errores en las tomas de decisiones
