@@ -158,12 +158,6 @@ public class Tablero extends Environment {
         return 0;
       }
 
-    public int getRandomColor(){ // --- TODO ---
-        Random rand = new Random();
-        int color = rand.nextInt(6);
-        return color;
-    }
-
     public boolean isEmpty(int i, int j){ //HERRAMIENTA
       return isFree(BLUESTEAK,i,j) && isFree(REDSTEAK,i,j) && isFree(GREENSTEAK,i,j) && isFree(GRAYSTEAK,i,j) && isFree(ORANGESTEAK,i,j) && isFree(MAGENTASTEAK,i,j);
     }
