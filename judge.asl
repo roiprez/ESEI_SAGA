@@ -71,7 +71,7 @@ nextPosition(P1,P2,Dir,NX,NY):-
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
 	((pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
 	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
-	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
+	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X & Direction="none") |
 	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
 	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW" & Direction="none") |
 	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
@@ -129,19 +129,19 @@ patternT(Color,X,Y,Direction) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
 	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
 	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "standing") |
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!standing")/* & Direction = "standing"*/) |
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
 	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
 	tablero(celda(X,Y-1,_),ficha(Color,_)) & 
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!down")/* & Direction = "upside-down"*/) |
 	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
 	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
 	tablero(celda(X+1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "pointing-right") |
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!right")/* & Direction = "pointing-right"*/) |
 	(tablero(celda(X,Y-1,_),ficha(Color,_)) & 
 	tablero(celda(X,Y+1,_),ficha(Color,_)) & 
 	tablero(celda(X-1,Y,_),ficha(Color,_)) & 
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "pointing-left").
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!left")/* & Direction = "pointing-left"*/).
 	
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :- 
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & 
@@ -206,7 +206,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Reconocimiento de posicion vacia bajo una ficha para el algoritmo de caida     // --- TODO --- Caida en diagonal/horizontal
 emptyUnder(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X,Y+1,_),e). 
 
-//Correspondencia entre el patrón que explosiona y la ficha especial que se genera
+//Correspondencia entre el patr?n que explosiona y la ficha especial que se genera
 specialSteak("4inLineH",ip).  
 specialSteak("4inLineW",ip). 
 specialSteak("5inLineH",ct). 
@@ -435,8 +435,8 @@ generationPoints(ct,8).
 								+tablero(celda(X1,Y1,0),ficha(C2,TipoFicha2)); 
 								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
 								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")");
-								.wait(250); //--- TODO --- Ajusta la velocidad del intercambio de fichas
-								-+recursivityFlag(1);//Deteción y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado            
+								//.wait(250); //--- TODO --- Ajusta la velocidad del intercambio de fichas
+								-+recursivityFlag(1);//Deteci?n y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado            
 								-+explosionFlag(1);
 								-+dualExplosionFlag(0);
 								-+posicionesIntercambiadas(X1,Y1,X2,Y2);
@@ -518,7 +518,7 @@ generationPoints(ct,8).
 
 
 
-//Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero después de que el jugador realice movimiento
+//Actualizacion de los BB tras todas las acciones ocurridas sobre el tablero despu?s de que el jugador realice movimiento
 +!updatePlayersTableroBB <-   
 			.send(player1,tell,deleteTableroBB);
 			.send(player2,tell,deleteTableroBB);
@@ -527,7 +527,9 @@ generationPoints(ct,8).
 			.send(player2,untell,deleteTableroBB);
 			!mostrarTablero(player1);
 			!mostrarTablero(player2).
-			
+
+
+//Gestion de patrones			
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineH" <-
 		delete(Color,StartsAtX,StartsAtY);	                                                     
 		delete(Color,StartsAtX,StartsAtY+1);
@@ -535,17 +537,7 @@ generationPoints(ct,8).
 		
 		!explosion(StartsAtX,StartsAtY);   
 		!explosion(StartsAtX,StartsAtY+1);              
-		!explosion(StartsAtX,StartsAtY+2);
-		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);                       
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_);                                                 
-		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
-		+tablero(celda(StartsAtX,StartsAtY,0),e);  // "e" aparece cuando en una celda no hay ninguna ficha
-		+tablero(celda(StartsAtX,StartsAtY+1,0),e);         
-		+tablero(celda(StartsAtX,StartsAtY+2,0),e).
-		
-		
-				
+		!explosion(StartsAtX,StartsAtY+2).				
 		
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineW" <-
 		delete(Color,StartsAtX,StartsAtY);	
@@ -554,17 +546,8 @@ generationPoints(ct,8).
 		
 		!explosion(StartsAtX,StartsAtY);
 		!explosion(StartsAtX+1,StartsAtY);
-		!explosion(StartsAtX+2,StartsAtY);
-		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);    
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
-		+tablero(celda(StartsAtX,StartsAtY,0),e);    
-		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+2),StartsAtY,0),e).
-		
-		
-		
+		!explosion(StartsAtX+2,StartsAtY).
+
 		
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineH" <-
 		delete(Color,StartsAtX,StartsAtY);	
@@ -575,16 +558,7 @@ generationPoints(ct,8).
 		!explosion(StartsAtX,StartsAtY);
 		!explosion(StartsAtX,StartsAtY+1);
 		!explosion(StartsAtX,StartsAtY+2);
-		!explosion(StartsAtX,StartsAtY+3);
-
-		-tablero(celda(StartsAtX,StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+2,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+3,_),_);
-		+tablero(celda(StartsAtX,StartsAtY,0),e);    
-		+tablero(celda(StartsAtX,StartsAtY+1,0),e);
-		+tablero(celda(StartsAtX,StartsAtY+2,0),e);
-		+tablero(celda(StartsAtX,StartsAtY+3,0),e).
+		!explosion(StartsAtX,StartsAtY+3).
 
 		
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineW" <-
@@ -596,16 +570,7 @@ generationPoints(ct,8).
 		!explosion(StartsAtX,StartsAtY);
 		!explosion(StartsAtX+1,StartsAtY);
 		!explosion(StartsAtX+2,StartsAtY);
-		!explosion(StartsAtX+3,StartsAtY); 
-
-		-tablero(celda(StartsAtX,StartsAtY,_),_);       
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+3),StartsAtY,_),_);
-		+tablero(celda(StartsAtX,StartsAtY,0),e);    
-		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+3),StartsAtY,0),e).
+		!explosion(StartsAtX+3,StartsAtY).
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineH"<-
@@ -619,19 +584,7 @@ generationPoints(ct,8).
 		!explosion(StartsAtX,StartsAtY+1);
 		!explosion(StartsAtX,StartsAtY+2);
 		!explosion(StartsAtX,StartsAtY+3);
-		!explosion(StartsAtX,StartsAtY+4);  
-
-		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_); 
-		-tablero(celda(StartsAtX,StartsAtY+2,_),_); 
-		-tablero(celda(StartsAtX,StartsAtY+3,_),_); 
-		-tablero(celda(StartsAtX,StartsAtY+4,_),_); 
-		+tablero(celda(StartsAtX,StartsAtY,0),e);  
-		+tablero(celda(StartsAtX,StartsAtY+1,0),e); 
-		+tablero(celda(StartsAtX,StartsAtY+2,0),e);         
-		+tablero(celda(StartsAtX,StartsAtY+3,0),e);
-		+tablero(celda(StartsAtX,StartsAtY+4,0),e).
+		!explosion(StartsAtX,StartsAtY+4).  
 
 		
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineW" <-
@@ -646,20 +599,8 @@ generationPoints(ct,8).
 		!explosion(StartsAtX+1,StartsAtY);
 		!explosion(StartsAtX+2,StartsAtY);
 		!explosion(StartsAtX+3,StartsAtY); 
-		!explosion(StartsAtX+4,StartsAtY); 
+		!explosion(StartsAtX+4,StartsAtY). 
 	
-		
-		-tablero(celda(StartsAtX,StartsAtY,_),_);        
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);                                                            
-		-tablero(celda((StartsAtX+2),StartsAtY,_),_);
-		-tablero(celda((StartsAtX+3),StartsAtY,_),_);                  
-		-tablero(celda((StartsAtX+4),StartsAtY,_),_);
-		+tablero(celda(StartsAtX,StartsAtY,0),e);    
-		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+2),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+3),StartsAtY,0),e);
-		+tablero(celda((StartsAtX+4),StartsAtY,0),e).
-
 		
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "Square" <-
 		delete(Color,StartsAtX,StartsAtY);	
@@ -670,16 +611,7 @@ generationPoints(ct,8).
 		!explosion(StartsAtX,StartsAtY);
 		!explosion(StartsAtX+1,StartsAtY); 
 		!explosion(StartsAtX,StartsAtY+1); 
-		!explosion(StartsAtX+1,StartsAtY+1);
-	
-		-tablero(celda(StartsAtX,StartsAtY,_),_);        
-		-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-		-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-		-tablero(celda(StartsAtX+1,StartsAtY+1,_),_); 
-		+tablero(celda(StartsAtX,StartsAtY,0),e);       
-		+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-		+tablero(celda(StartsAtX,StartsAtY+1,0),e); 
-		+tablero(celda(StartsAtX+1,StartsAtY+1,0),e).
+		!explosion(StartsAtX+1,StartsAtY+1).
 
 		
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "T"<- 
@@ -697,19 +629,8 @@ generationPoints(ct,8).
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX-1,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY+2);
+	!explosion(StartsAtX,StartsAtY+2).
 
-	-tablero(celda(StartsAtX,StartsAtY,_),_);        
-	-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-	-tablero(celda(StartsAtX-1,StartsAtY,_),_);
-	-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-	-tablero(celda(StartsAtX,StartsAtY+2,_),_);	
-	+tablero(celda(StartsAtX,StartsAtY,0),e);        
-	+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-	+tablero(celda(StartsAtX-1,StartsAtY,0),e);
-	+tablero(celda(StartsAtX,StartsAtY+1,0),e);
-	+tablero(celda(StartsAtX,StartsAtY+2,0),e).
-		
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "upside-down" <-     
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX+1,StartsAtY);
@@ -721,18 +642,8 @@ generationPoints(ct,8).
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX-1,StartsAtY);
 	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX,StartsAtY-2);
+	!explosion(StartsAtX,StartsAtY-2).
 	
-	-tablero(celda(StartsAtX,StartsAtY,_),_);                                                                       
-	-tablero(celda((StartsAtX+1),StartsAtY,_),_);
-	-tablero(celda(StartsAtX-1,StartsAtY,_),_);
-	-tablero(celda(StartsAtX,StartsAtY-1,_),_);                                                        
-	-tablero(celda(StartsAtX,StartsAtY-2,_),_);	
-	+tablero(celda(StartsAtX,StartsAtY,0),e);        
-	+tablero(celda((StartsAtX+1),StartsAtY,0),e);
-	+tablero(celda(StartsAtX-1,StartsAtY,0),e);
-	+tablero(celda(StartsAtX,StartsAtY-1,0),e);
-	+tablero(celda(StartsAtX,StartsAtY-2,0),e).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-right" <- 
 
@@ -746,18 +657,7 @@ generationPoints(ct,8).
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY-1);
 	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX+2,StartsAtY);
-
-	-tablero(celda(StartsAtX,StartsAtY,_),_);        
-	-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-	-tablero(celda(StartsAtX,StartsAtY-1,_),_);
-	-tablero(celda(StartsAtX+1,StartsAtY,_),_);
-	-tablero(celda(StartsAtX+2,StartsAtY,_),_);	
-	+tablero(celda(StartsAtX,StartsAtY,0),e);        
-	+tablero(celda(StartsAtX,StartsAtY+1,0),e);
-	+tablero(celda(StartsAtX,StartsAtY-1,0),e);
-	+tablero(celda(StartsAtX+1,StartsAtY,0),e);
-	+tablero(celda(StartsAtX+2,StartsAtY,0),e).	
+	!explosion(StartsAtX+2,StartsAtY).
 	
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-left" <-     
 
@@ -771,38 +671,29 @@ generationPoints(ct,8).
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY-1);
 	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX-2,StartsAtY);
-	
-	-tablero(celda(StartsAtX,StartsAtY,_),_);        
-	-tablero(celda(StartsAtX,StartsAtY+1,_),_);
-	-tablero(celda(StartsAtX,StartsAtY-1,_),_);
-	-tablero(celda(StartsAtX-1,StartsAtY,_),_);
-	-tablero(celda(StartsAtX-2,StartsAtY,_),_);	
-	+tablero(celda(StartsAtX,StartsAtY,0),e);        
-	+tablero(celda(StartsAtX,StartsAtY+1,0),e);
-	+tablero(celda(StartsAtX,StartsAtY-1,0),e);                                                                                                                                                                                  
-	+tablero(celda(StartsAtX-1,StartsAtY,0),e);
-	+tablero(celda(StartsAtX-2,StartsAtY,0),e).
+	!explosion(StartsAtX-2,StartsAtY).
  
                                          
 //Establecer celda como movida para generar sobre ella la ficha especial cuando la explosion es directamente realizada por el movimiento del jugador
 +!setMovedSteak(X,Y,Pattern) : explosionFlag(1) & tablero(celda(X,Y,_),e) & specialSteak(Pattern,Type)<- 
 			-tablero(celda(X,Y,_),_);                                                                          
 			+tablero(celda(X,Y,0),m);
-			-+dualExplosionFlag(1). //Aunque se active el flag, solo se percibirá si explota otro patrón contiguo
+			-+dualExplosionFlag(1). //Aunque se active el flag, solo se percibir? si explota otro patr?n contiguo
 +!setMovedSteak(X,Y,Pattern).		
 		
-//Generacion de la ficha especial acorde al patrón que le corresponde tras una explosion		
+//Generacion de la ficha especial acorde al patr?n que le corresponde tras una explosion		
 +!generateSpecialSteak(Pattern,Color) : explosionFlag(1) & tablero(celda(X,Y,_),m) & specialSteak(Pattern,Type)<- //La explosion se produjo directamente por el movimiento del jugador, y la ficha especial se debe de colocar en la ficha movida.  
 			put(Color,X,Y,Type);                  
 			-tablero(celda(X,Y,_),m); 
 			+tablero(celda(X,Y,0),ficha(Color,Type));
 			!specialStickGenerationPoints(Type);
-			?dualExplosionFlag(F);			 // --- TODO --- Solucion a problema de dos explosiones contiguas???   
-			if(F=1){
+			!dualExplosion.
+			
++!dualExplosion : dualExplosionFlag(F) & F=1 & tablero(celda(NX,NY,_),m)<-		// --- TODO --- Solucion a problema de dos explosiones contiguas???  	
 			-tablero(celda(NX,NY,_),m);
-			-+dualExplosionFlag(0);
-			}.
+			+tablero(celda(NX,NY,0),e);
+			-+dualExplosionFlag(0).
++!dualExplosion.
 			  
 
 +!generateSpecialSteak(Pattern,Color) : explosionFlag(0) & tablero(celda(X,Y,_),e) & specialSteak(Pattern,Type)<-  //La explosion se produjo de forma indirecta por la caida de fichas. La ficha especial se coloca de forma aleatoria por unificacion. 			
@@ -820,9 +711,12 @@ generationPoints(ct,8).
 
 				
 				
-//Gestion de exlosiones especiales y puntuaciones
+//Gestion de explosiones especiales y puntuaciones
 +!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & turnoActual(A) & points(A,P)<- 
-			!specialExplosion(X,Y,C,T,D,A,P). 
+				-tablero(celda(X,Y,_),_);//Pimero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
+				+tablero(celda(X,Y,0),e);
+				delete(C,X,Y);
+				!specialExplosion(X,Y,C,T,D,A,P).
 
 +!specialExplosion(X,Y,C,T,D,A,P) : T = in <-      
     .print("+1");  
@@ -831,12 +725,9 @@ generationPoints(ct,8).
 
 			
 +!specialExplosion(X,Y,C,T,D,A,P) : T = ip  & (D="up" | D="down")<-     //Explosion en linea vertical
-			.print("+2 up");                                                                                                   
+			.print("+2");                                                                                                   
 			-points(A,P);
 			+points(A,P+2);
-			-tablero(celda(X,Y,_),_);
-			+tablero(celda(X,Y,0),e);
-			delete(C,X,Y);
 			for( tablero(celda(X,NY,_),ficha(NC,_))){
 					!explosion(X,NY);                                                                                                                                                             
 					-tablero(celda(X,NY,_),_);
@@ -845,12 +736,9 @@ generationPoints(ct,8).
 				}.
 				
 +!specialExplosion(X,Y,C,T,D,A,P) : T = ip  & (D="left" | D="right")<-     //Explosion en linea horizontal
-			.print("+2 left");                                                                                                   
+			.print("+2");                                                                                                   
 			-points(A,P);
 			+points(A,P+2);
-			-tablero(celda(X,Y,_),_);
-			+tablero(celda(X,Y,0),e);
-			delete(C,X,Y);
 			for( tablero(celda(NX,Y,_),ficha(NC,_))){
 				 	!explosion(NX,Y);
 					-tablero(celda(NX,Y,_),_);
@@ -882,6 +770,7 @@ generationPoints(ct,8).
 			  -tablero(celda(X,Y,_),_);
 			  +tablero(celda(X,Y,0),e);
 			  delete(C,X,Y).
++!coExplosion(X,Y).
 			  
 +!specialExplosion(X,Y,C,T,D,A,P) : T = ct <-     //Explosion de todas las fichas de ese color           
 			.print("+8");  
@@ -895,15 +784,70 @@ generationPoints(ct,8).
 			}.                                                                                                                                                                
 
 +!specialExplosion(X,Y,C,T,D,A,P).
-			    
-			
-			
-                  
-
++!explosion(X,Y).
 			
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
+									
+
+
+
+									
+/*									
+//Cálculo del número de puntos por explosion y consecuencias
++!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & turnoActual(A) & points(A,P)<- 
+				!specialExplosion(X,Y,C,T,D,A,P).
+
++!specialExplosion(X,Y,C,T,D,A,P) : T = in <-      
+	-points(A,P); //Cambiar contador como lo quieras utilizar!!
+    +points(A,P+1).       
+
+			
++!specialExplosion(X,Y,C,T,D,A,P) : T = ip  & (D="up" | D="down")<-     //Explosion en linea vertical
+			-points(A,P);
+			+points(A,P+2);
+			for( tablero(celda(X,NY,_),ficha(NC,_))){
+					!explosion(X,NY);                                                                                                                                                             
+				}.
+				
++!specialExplosion(X,Y,C,T,D,A,P) : T = ip  & (D="left" | D="right")<-     //Explosion en linea horizontal
+			-points(A,P);
+			+points(A,P+2);
+			for( tablero(celda(NX,Y,_),ficha(NC,_))){
+				 	!explosion(NX,Y);
+				}.   
+			
++!specialExplosion(X,Y,C,T,D,A,P) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY <-	 //Explosion de una ficha del mismo color (distinta a si misma)
+			-points(A,P);  
+			+points(A,P+4);
+			!explosion(NX,NY).                     
+
+			
++!specialExplosion(X,Y,C,T,D,A,P) : T = co <-  			//Explosion en cuadrado 3x3  
+			-points(A,P);
+			+points(A,P+6);
+			for ( .range(I,-1,1) ) {
+				for ( .range(J,-1,1) ) {
+					!coExplosion(X+I,Y+J);
+				};
+			}.
+
++!coExplosion(X,Y) : tablero(celda(X,Y,_),ficha(C,_)) <-
+			  !explosion(X+I,Y+J).
+
++!coExplosion(X,Y).
+			  
++!specialExplosion(X,Y,C,T,D,A,P) : T = ct <-     //Explosion de todas las fichas de ese color           
+			-points(A,P);
+			+points(A,P+8);
+			for( tablero(celda(NX,NY,_),ficha(C,_))){                                        
+				 	!explosion(NX,NY);
+			}.                                                                                                                                                                
+
++!specialExplosion(X,Y,C,T,D,A,P).
++!explosion(X,Y).
+*/
 
 
 
