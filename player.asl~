@@ -319,28 +319,34 @@ pattern3inLineH(Color,X,Y) :-
 		
 //Gestion de exlosiones especiales y puntuaciones
 +!explosion(X,Y,D,P) : tablero(celda(X,Y,_),ficha(C,T)) & puntosJugada(P)<- 
-			//-explosion(X,Y);
-			!specialExplosion(X,Y,C,T,D,P).
+			-tablero(celda(X,Y,Own),Ficha);//Pimero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
+			+tablero(celda(X,Y,0),e);
+			!specialExplosion(X,Y,C,T,D,P);
+			-tablero(celda(X,Y,0),e);
+			+tablero(celda(X,Y,Own),Ficha).
 
 +!explosion(X,Y,D,P).
 
-+!specialExplosion(X,Y,C,T,D,P) : T = in./* <-      
-    .print("Entro y pongo un +1");  
-    -+puntosJugada(P+1). */
++!specialExplosion(X,Y,C,T,D,P) : T = in <-      
+    .print("Entro y pongo un +1 a: ", P);  
+    -+puntosJugada(P+1). 
 	
 +!specialExplosion(X,Y,C,T,D,P) : T = ip  & (D="up" | D="down")<-     //Explosion en linea 
 			.print("ip up o down");
+			
 			-+puntosJugada(P+2);
-			/*for( tablero(celda(X,NY,_),ficha(NC,_))){
+			for( tablero(celda(X,NY,_),ficha(NC,_))){
+					.print("Bucle ip");
 					!explosion(X,NY,D,P+2);                                                                                                                                                             
-				}*/.
+				}.
 				
 +!specialExplosion(X,Y,C,T,D,P) : T = ip  & (D="left" | D="right")<-     //Explosion en linea horizontal
 .print("ip left o right");
 			-+puntosJugada(P+2);
-			/*for( tablero(celda(NX,Y,_),ficha(NC,_))){
+			for( tablero(celda(NX,Y,_),ficha(NC,_))){
+					.print("Bucle ip");
 				 	!explosion(NX,Y,D,P+2);
-				}*/.  
+				}.  
 			
 +!specialExplosion(X,Y,C,T,D,P) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY <-	 //Explosion de una ficha del mismo color  
 .print("gs");
@@ -350,11 +356,11 @@ pattern3inLineH(Color,X,Y) :-
 +!specialExplosion(X,Y,C,T,D,P) : T = co <-  			//Explosion en cuadrado 3x3 
 .print("co");
 			-+puntosJugada(P+6);                   
-			/*for ( .range(I,-1,1) ) {
+			for ( .range(I,-1,1) ) {
 				for ( .range(J,-1,1) ) {
 					!coExplosion(X+I,Y+J,D,P+6);	
 				};
-			}*/.
+			}.
 
 +!coExplosion(X,Y,D,P) : tablero(celda(X,Y,_),ficha(C,_)) <-
 			  !explosion(X,Y,D,P).
@@ -362,9 +368,9 @@ pattern3inLineH(Color,X,Y) :-
 +!specialExplosion(X,Y,C,T,D,P) : T = ct <-     //Explosion de todas las fichas de ese color  
 .print("ct");
 			-+puntosJugada(P+8);
-			/*for( tablero(celda(NX,NY,_),ficha(C,_))){                                        
+			for( tablero(celda(NX,NY,_),ficha(C,_))){                                        
 				 	!explosion(NX,NY,D,P+8);	
-			}*/.                                                                                                                                                                
+			}.                                                                                                                                                                
 
 +!specialExplosion(X,Y,C,T,D,P) <- .print("ERROR en +specialExplosion()").
 
