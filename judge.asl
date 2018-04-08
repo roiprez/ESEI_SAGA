@@ -389,9 +389,9 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 				.print("Tablero de juego generado!");
 				.send(player1,tell,size(N));
 				.send(player2,tell,size(N));
-				.wait(250);
+				.wait(500);
 				!mostrarTablero(player1);
-				.wait(250);
+				.wait(500);
 				!mostrarTablero(player2);
 				.print(" ----- ----- ----- ----- EMPIEZA EL JUEGO! ----- ----- ----- -----");
 				.print("                ----- ----- ----- NIVEL 1 ----- ----- -----\n");
