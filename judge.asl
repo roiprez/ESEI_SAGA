@@ -23,14 +23,14 @@ jugadorDescalificado(player2,0).
 
 recursivityFlag(1). //Flag utilizado como herramienta para implentar un mecanismo de recursividad en el algoritmo de explosion-gravedad-rellenado
 explosionFlag(1). // Cuando el jugador provoca directamente una explosion, el flag se activa. Si las explosiones se producen por caidas, permanece desactivado.
-dualExplosionFlag(0). //Flag que permite controlar situaciones de explosión de doble patron
+dualExplosionFlag(0). //Flag que permite controlar situaciones de explosiï¿½n de doble patron
 
 level(1).
 
 obstacles(10). //Numero de obstaculos a generar
 
-limitPoints(1,50). //Puntuación a obtener para ganar un nivel
-limitPoints(2,5000).
+limitPoints(1,100). //Puntuaciï¿½n a obtener para ganar un nivel
+limitPoints(2,100).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
 points(1,player2,0).
@@ -42,7 +42,7 @@ levelWinner(2,none).
 
 finalWinner(none).
 
-endGame(0). //Flag que indica la finalización del juego al terminar todos los niveles
+endGame(0). //Flag que indica la finalizaciï¿½n del juego al terminar todos los niveles
 
 
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
@@ -62,11 +62,6 @@ movimiento(X,Y,"right") :- tablero(celda(X+1,Y,_),_).
 
 //Comprobacion de Color
 colorFichasDistintos(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
-
-//Generacion aleatoria del tipo de ficha
-randomType(RandomNumber,Type):-
-	(RandomNumber == 0 & Type = ip) | (RandomNumber == 1 & Type = in) | (RandomNumber == 2 & Type = ct) | (RandomNumber == 3 & Type = gs)
-	| (RandomNumber == 4 & Type = co).
 
 //Duenho de la jugada
 plNumb(A,PlNumb):-
@@ -266,7 +261,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
 		.print("--- --- --- --- --- Fin del juego --- --- --- --- ---").
 
-+!checkFinalWinner(W1,W2) : W1=none & W2=none <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganará el jugador uno por ser el que abre la partida
++!checkFinalWinner(W1,W2) : W1=none & W2=none <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganarï¿½ el jugador uno por ser el que abre la partida
 
 +!checkFinalWinner(W1,W2) : W1=none <- -+finalWinner(W2).
 
@@ -346,7 +341,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-		.print("El agente ",P," externo a la partida est? intentando jugar.").
+		.print("El agente ",P," externo a la partida estï¿½ intentando jugar.").
 
 // Esta regla la podeis adecuar a vuestras necesidades
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <-
@@ -394,12 +389,12 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 				.print("Tablero de juego generado!");
 				.send(player1,tell,size(N));
 				.send(player2,tell,size(N));
-				.wait(500);
+				.wait(250);
 				!mostrarTablero(player1);
-				.wait(500);
+				.wait(250);
 				!mostrarTablero(player2);
 				.print(" ----- ----- ----- ----- EMPIEZA EL JUEGO! ----- ----- ----- -----");
-				.print("                ----- ----- ----- NIVEL 1 ----- ----- -----");
+				.print("                ----- ----- ----- NIVEL 1 ----- ----- -----\n");
 				!comienzoTurno.
 
 
@@ -414,12 +409,12 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 //Finalizacion de un turno
 +turnoTerminado(Player) : level(L) & L=1 & (limitPoints(1,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=50) <- //Final del Nivel 1
-					.print("Alcanzado el número máximo de puntos en el Nivel 1");
+					.print("Alcanzado el nï¿½mero mï¿½ximo de puntos en el Nivel 1");
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(1,Winner);
-					.print("[ GANADOR NIVEL 1: ",Winner," ]");
-					.print("                      ----- ----- ----- NIVEL 2 ----- ----- -----");
+					.print("[ GANADOR NIVEL 1: ",Winner," ]\n");
+					.print("                      ----- ----- ----- NIVEL 2 ----- ----- -----\n");
 					.wait(1000);
 					-+level(2);
 					-+turnoActual(player1);
@@ -438,7 +433,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +turnoTerminado(Player) : level(L) & L=2 & (limitPoints(2,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=50) <- //Final del Nivel 2
-					.print("Alcanzado el número máximo de puntos en el Nivel 2");
+					.print("Alcanzado el nï¿½mero mï¿½ximo de puntos en el Nivel 2");
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(2,Winner);
@@ -475,7 +470,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 					-+jugadasRestantes(N-1);
 					-jugadasPlayer(player1,J);
 					+jugadasPlayer(player1,J+1);
-					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
+					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]\n").
 
 
 +!cambioTurno(P,N,J) : P = player2 | jugadorDescalificado(player2,1) <-
@@ -483,7 +478,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 					-+jugadasRestantes(N-1);
 					-jugadasPlayer(player2,J);
 					+jugadasPlayer(player2,J+1);
-					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
+					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]\n").
 
 
 //Cambio de turno cuando hay un jugador descalificado
@@ -491,7 +486,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 					-+jugadasRestantes(N-1);
 					-jugadasPlayer(P,J);
 					+jugadasPlayer(P,J+1);
-					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]").
+					.print("[ Jugadas restantes: ", N-1," || Jugadas completadas ",P,": ", J+1," ]\n").
 
 
 
@@ -555,7 +550,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!patternMatchPosition(I,J): tablero(celda(I,J,_),ficha(C,_)) & comprobarPatrones(C,I,J,StartsAtX,StartsAtY,Direction,Pattern) & not Pattern = "none" & posicionesIntercambiadas(X1,Y1,X2,Y2)<-
-	.print(Pattern);
 	!handlePattern(C,StartsAtX,StartsAtY,Direction,Pattern);
 	.wait(350); // Ajusta el tiempo tras cada explosion
 	!setMovedSteak(X1,Y1,Pattern);
@@ -819,8 +813,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 +!specialStickGenerationPoints(T) : generationPoints(T,NP) & turnoActual(A) & level(L) & points(L,A,P) <-
 				-points(L,A,P);
-				+points(L,A,P+NP);
-				.print("+",NP).
+				+points(L,A,P+NP).
 
 
 
@@ -835,13 +828,11 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 +!explosion(X,Y) <- .print("ERROR. !explosion(",X,",",Y,")").
 
 +!specialExplosion(X,Y,C,T,D,A,P,L) : T = in <-
-    .print("+1");
 	-points(L,A,P);
     +points(L,A,P+1).
 
 
 +!specialExplosion(X,Y,C,T,D,A,P,L) : T = ip  & (D="up" | D="down")<-     //Explosion en linea vertical
-			.print("+2");
 			-points(L,A,P);
 			+points(L,A,P+2);
 			for( tablero(celda(X,NY,_),ficha(NC,_))){
@@ -852,7 +843,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 				}.
 
 +!specialExplosion(X,Y,C,T,D,A,P,L) : T = ip  & (D="left" | D="right")<-     //Explosion en linea horizontal
-			.print("+2");
 			-points(L,A,P);
 			+points(L,A,P+2);
 			for( tablero(celda(NX,Y,_),ficha(NC,_))){
@@ -863,7 +853,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 				}.
 
 +!specialExplosion(X,Y,C,T,D,A,P,L) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY <-	 //Explosion de una ficha del mismo color (distinta a si misma)
-			.print("+4");
 			-points(L,A,P);
 			+points(L,A,P+4);
 			!explosion(NX,NY);
@@ -872,7 +861,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 			delete(C,NX,NY).
 
 +!specialExplosion(X,Y,C,T,D,A,P,L) : T = co <-  			//Explosion en cuadrado 3x3
-			.print("+6");
 			-points(L,A,P);
 			+points(L,A,P+6);
 			for ( .range(I,-1,1) ) {
@@ -889,7 +877,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 +!coExplosion(X,Y).
 
 +!specialExplosion(X,Y,C,T,D,A,P,L) : T = ct <-     //Explosion de todas las fichas de ese color
-			.print("+8");
 			-points(L,A,P);
 			+points(L,A,P+8);
 			for( tablero(celda(NX,NY,_),ficha(C,_))){
@@ -905,4 +892,3 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
-

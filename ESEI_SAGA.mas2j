@@ -12,7 +12,6 @@ MAS eSEI_SAGA {
 
         player1 ./player.asl;
         player2 ./player.asl;
-		//player2 ./badPlayer.asl; //Jugador que realiza una serie de jugadas inválidas.
 }
 
 
