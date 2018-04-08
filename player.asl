@@ -6,7 +6,7 @@
 
 /* Initial beliefs and rules */
 
-//Da una jugada aleatoria desde las coordenadas X1,Y1 y en direcci贸n Dir
+//Da una jugada aleatoria desde las coordenadas X1,Y1 y en direcci髇 Dir
 pensarJugadaAleatoria(X1,Y1,Dir):-
 	size(N)&
 	.random(X11,10) &
@@ -178,7 +178,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!pensarJugada;
 	!comunicarJugada.
 
-//Env铆a al juez la jugada que quiere realizar
+//Env韆 al juez la jugada que quiere realizar
 +!comunicarJugada : cordX(X) & cordY(Y) & dirMax(Dir) <-
 	.print("Quiero mover desde posicion (",X,",",Y,") en direccion ",Dir);
 	.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),Dir));
@@ -186,7 +186,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comunicarJugada.
 
-//Comprueba el estado del tablero para buscar la jugada 贸ptima, si no hay una jugada que de puntuaci贸n, hace una aleatoria.
+//Comprueba el estado del tablero para buscar la jugada 髉tima, si no hay una jugada que de puntuaci髇, hace una aleatoria.
 +!pensarJugada  <-
 	-+puntosMax(0);
 	-+puntos(0);
@@ -195,7 +195,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!comprobarTablero(Lista,0);
 	!comprobarCeroPuntos.
 
-//Comprueba de forma recursiva cada posici贸n del tablero y las posibilidades de jugada
+//Comprueba de forma recursiva cada posici髇 del tablero y las posibilidades de jugada
 +!comprobarTablero(Lista,N) : .length(Lista,Length) & N<Length <-
 	.nth(N,Lista,celda(X,Y,Own));
 	!comprobarDireccion(X,Y);
@@ -208,16 +208,18 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarDireccion(X,Y): Y<9 & X<9 <-
 
 	//Caso "down"
+	.abolish(explotada(X,Y));
 	!comprobarDown(X,Y);
 	!comprobarPuntosDown(X,Y);
 
 	//Caso "right"
+	.abolish(explotada(X,Y));
 	!comprobarRight(X,Y);
 	!comprobarPuntosRight(X,Y).
 
 +!comprobarDireccion(X,Y).
 
-//Comprueba las consecuencias de un movimiento hacia abajo de la ficha en X,Y
+//Comprueba las consecuencias de un movimiento hacia abajo de la ficha en X,Y+1
 +!comprobarDown(X,Y) : tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
 
 	-tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown));
@@ -239,7 +241,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comprobarDown(X,Y).
 
-//Comprueba las consecuencias de un movimiento hacia la derecha de la ficha en X,Y
+//Comprueba las consecuencias de un movimiento hacia la derecha de la ficha en X+1,Y
 +!comprobarRight(X,Y) : tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
 
 	-tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight));
@@ -261,21 +263,21 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comprobarRight(X,Y).
 
-//Comprueba si la jugada hacia abajo ha superado la jugada anterior de m谩s puntos
+//Comprueba si la jugada hacia abajo ha superado la jugada anterior de m醩 puntos
 +!comprobarPuntosDown(X,Y) : puntosTotalJugada(PuntosDown) & puntos(Puntos) & PuntosDown > Puntos <-
 	-+puntos(PuntosDown);
 	-+direction("down").
 
 +!comprobarPuntosDown(X,Y).
 
-//Comprueba si la jugada hacia la derecha ha superado la jugada anterior de m谩s puntos
+//Comprueba si la jugada hacia la derecha ha superado la jugada anterior de m醩 puntos
 +!comprobarPuntosRight(X,Y) : puntosTotalJugada(PuntosRight) & puntos(Puntos) & PuntosRight > Puntos <-
 	-+puntos(PuntosRight);
 	-+direction("right").
 
 +!comprobarPuntosRight(X,Y).
 
-//Comprueba que se ha mejorado la puntuaci贸n con la comprobaci贸n anterior y se guardan los datos de esta
+//Comprueba que se ha mejorado la puntuaci髇 con la comprobaci髇 anterior y se guardan los datos de esta
 +!comprobarPuntos(X,Y) : puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax <-
 	-+cordX(X);
 	-+cordY(Y);
@@ -303,44 +305,50 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX+2,StartsAtY).
 
-+!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineH" <-
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineH" & puntosTotalJugada(P) <-
+	-+puntosTotalJugada(P+2);
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY+2);
 	!explosion(StartsAtX,StartsAtY+3).
 
-+!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineW" <-
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineW" & puntosTotalJugada(P) <-
+	-+puntosTotalJugada(P+2);
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX+2,StartsAtY);
 	!explosion(StartsAtX+3,StartsAtY).
 
-+!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineH"<-
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineH" & puntosTotalJugada(P)<-
+	-+puntosTotalJugada(P+8);
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY+2);
 	!explosion(StartsAtX,StartsAtY+3);
 	!explosion(StartsAtX,StartsAtY+4).
 
-+!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineW" <-
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineW" & puntosTotalJugada(P) <-
+	-+puntosTotalJugada(P+8);
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX+2,StartsAtY);
 	!explosion(StartsAtX+3,StartsAtY);
 	!explosion(StartsAtX+4,StartsAtY).
 
-+!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "Square" <-
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "Square" & puntosTotalJugada(P) <-
+	-+puntosTotalJugada(P+4);
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX+1,StartsAtY+1).
 
-+!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "T"<-
++!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "T" & puntosTotalJugada(P)<-
+	-+puntosTotalJugada(P+6);
 	!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern).
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern).
 
-//Manejo de las particularidades del patr贸n en T
+//Manejo de las particularidades del patr髇 en T
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "standing" <-
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
@@ -369,8 +377,9 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!explosion(StartsAtX-1,StartsAtY);
 	!explosion(StartsAtX-2,StartsAtY).
 
-//C锟絣culo del n锟絤ero de puntos por explosion y consecuencias
-+!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & puntosTotalJugada(P)<-
+//Calculo del numero de puntos por explosion y consecuencias
++!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & puntosTotalJugada(P) & not explotada(X,Y)<-
+	+explotada(X,Y);
 	!specialExplosion(X,Y,C,T,D).
 
 +!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P)<-
@@ -458,4 +467,5 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +invalido(fueraTurno,N)[source(judge)] <- .print("Soy un tramposo!!! Intente realizar una jugada fuera de mi turno y el Juez me ha pillado").
 
 //Plan por defecto a ejecutar en caso desconocido.
-+Default[source(A)]: not A=self  & not tablero(C,F) & not size(N)<- .print("El agente ",A," se comunica conmigo, pero no lo entiendo!").
++Default[source(A)]: not A=self  & not tablero(C,F) & not size(N)<- .print("El agente ",A," se comunica conmigo, pero no lo entiendo! (",Default,")").
+

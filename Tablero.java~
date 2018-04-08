@@ -24,6 +24,9 @@ public class Tablero extends Environment {
   public static final int ORANGESTEAK  = 256;
   public static final int MAGENTASTEAK  = 512;
 
+  public static final int OBSTACLE  = 1024;
+
+
   private Logger logger = Logger.getLogger("Tablero.mas2j."+Tablero.class.getName());
 
   private TableroModel model;
@@ -78,10 +81,19 @@ public class Tablero extends Environment {
           model.put(c,x,y,t);
           //view.repaint(); //view.update();
           break;
+          case("resetTablero"):
+          model.reset();
+          //view.repaint(); //view.update();
+          break;
+          case("putObstacle"):
+          x = (int)((NumberTerm)message.getTerm(0)).solve();
+          y = (int)((NumberTerm)message.getTerm(1)).solve();
+          model.putObstacle(x,y);
+          break;
         }
       } else { //Recepcion de un mensaje de otro agente que no sea el juez
         logger.info("Se ha recibido una peticion ilegal. "+ agent +" no puede realizar la accion: "+ message);
-        Literal ilegal = Literal.parseLiteral("accionIlegal(" + agent + ")"); // --- TODO ---
+        Literal ilegal = Literal.parseLiteral("accionIlegal(" + agent + ")");
         addPercept("judge",ilegal);}
       } catch (Exception e) {
         e.printStackTrace();
@@ -97,23 +109,28 @@ public class Tablero extends Environment {
 
       private TableroModel() {
         super(GSize, GSize, 3);
+        reset();
+        addPercept("judge",Literal.parseLiteral("startGame"));
+      }
+
+      void reset(){ //Generacion del tablero de juego y envio al juez
+        removePerceptsByUnif("judge",Literal.parseLiteral("addTablero(X,Y)"));
         int color = 16;
         for(int i = 0; i < GSize; i++){
           for(int j = 0; j < GSize; j++){
             steakType[i][j]="in";
-            add(color,i,j); //Se anhade la ficha generada al tablero
+            set(color,i,j);
             int judgeColor = getJudgeColor(color);
-            addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))"));//Le pasa al juez la informaciÃ³n del tablero // --- TODO --- Generar tipo de ficha aleatorio
-            if (color < 512) {color = color * 2;}//Itera sobre los colores de las fichas para asignar los colores secuencialmente
+            addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))"));
+            if (color < 512) {color = color * 2;}
             else {color = 16;};
           };
           if (color < 512) {color = color * 2;}
           else {color = 16;};
         };
-        addPercept("judge",Literal.parseLiteral("startGame")); // --- TODO --- Desplazar al juez??
       }
 
-      void exchange(int c1, int x1, int y1, int c2, int x2, int y2) throws Exception { // --- TODO ---
+      void exchange(int c1, int x1, int y1, int c2, int x2, int y2) throws Exception {
         String aux = steakType[x1][y1];
         steakType[x1][y1] = steakType[x2][y2];
         steakType[x2][y2] = aux;
@@ -123,7 +140,7 @@ public class Tablero extends Environment {
         set(codColor1,x2,y2);
       }
 
-      void delete(int color,int x, int y) throws Exception { // --- TODO ---
+      void delete(int color,int x, int y) throws Exception {
         steakType[x][y]="";
         int codColor = getEnvironmentColor(color);
         remove(codColor,x,y);
@@ -131,7 +148,12 @@ public class Tablero extends Environment {
 
       void put(int c, int x, int y,String t) throws Exception {
         steakType[x][y]=t;
-				add(getEnvironmentColor(c),x,y); //Se anhade la ficha generada al tablero
+				set(getEnvironmentColor(c),x,y);
+      }
+
+      void putObstacle(int x, int y){
+        steakType[x][y]="obstacle";
+        set(OBSTACLE,x,y);
       }
 
       public int getJudgeColor(int color){
@@ -157,32 +179,6 @@ public class Tablero extends Environment {
         }
         return 0;
       }
-
-    public boolean isEmpty(int i, int j){ //HERRAMIENTA
-      return isFree(BLUESTEAK,i,j) && isFree(REDSTEAK,i,j) && isFree(GREENSTEAK,i,j) && isFree(GRAYSTEAK,i,j) && isFree(ORANGESTEAK,i,j) && isFree(MAGENTASTEAK,i,j);
-    }
-
-    public int getColour(int i, int j){ //HERRAMIENTA
-      if(!isFree(BLUESTEAK,i,j)){
-        return BLUESTEAK;
-      }
-      if(!isFree(REDSTEAK,i,j)){
-        return REDSTEAK;
-      }
-      if(!isFree(GREENSTEAK,i,j)){
-        return GREENSTEAK;
-      }
-      if(!isFree(GRAYSTEAK,i,j)){
-        return GRAYSTEAK;
-      }
-      if(!isFree(ORANGESTEAK,i,j)){
-        return ORANGESTEAK;
-      }
-      if(!isFree(MAGENTASTEAK,j)){
-        return MAGENTASTEAK;
-      }
-      return 0; //Empty
-    }
   } //End of Class [Tablero Model]
 
 
@@ -216,6 +212,7 @@ public class Tablero extends Environment {
             case Tablero.GRAYSTEAK: drawSpecialSteak(g, x, y, Color.gray);  break;
             case Tablero.ORANGESTEAK: drawSpecialSteak(g, x, y, Color.orange);  break;
             case Tablero.MAGENTASTEAK: drawSpecialSteak(g, x, y, Color.magenta);  break;
+            case Tablero.OBSTACLE: drawObstacle(g,x,y); break;
           }
         }
       }
@@ -231,8 +228,16 @@ public class Tablero extends Environment {
         g.setColor(Color.lightGray);
         g.fillOval(x * cellSizeW + 10, y * cellSizeH + 10, cellSizeW - 20, cellSizeH - 20);
         g.setColor(Color.black);
-        drawString(g,x,y,defaultFont,steakType[x][y].toUpperCase()); // --- TODO ---
+        drawString(g,x,y,defaultFont,steakType[x][y].toUpperCase());
+      }
+
+      public void drawObstacle(Graphics g, int x, int y){
+        g.setColor(Color.darkGray);
+        g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,15,15);
+        g.setColor(Color.black);
+        //drawString(g,x,y,new Font("Arial", Font.BOLD, 50),"*"); //Descomentar si se desea relleno de los obstáculos
       }
     } //End of Class [Tablero View]
 
   } // End of Class [Tablero Environment]
+
