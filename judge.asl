@@ -23,13 +23,13 @@ jugadorDescalificado(player2,0).
 
 recursivityFlag(1). //Flag utilizado como herramienta para implentar un mecanismo de recursividad en el algoritmo de explosion-gravedad-rellenado
 explosionFlag(1). // Cuando el jugador provoca directamente una explosion, el flag se activa. Si las explosiones se producen por caidas, permanece desactivado.
-dualExplosionFlag(0). //Flag que permite controlar situaciones de explosi�n de doble patron
+dualExplosionFlag(0). //Flag que permite controlar situaciones de explosi?n de doble patron
 
 level(1).
 
 obstacles(10). //Numero de obstaculos a generar
 
-limitPoints(1,100). //Puntuaci�n a obtener para ganar un nivel
+limitPoints(1,100). //Puntuaci?n a obtener para ganar un nivel
 limitPoints(2,100).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
@@ -42,7 +42,7 @@ levelWinner(2,none).
 
 finalWinner(none).
 
-endGame(0). //Flag que indica la finalizaci�n del juego al terminar todos los niveles
+endGame(0). //Flag que indica la finalizaci?n del juego al terminar todos los niveles
 
 
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
@@ -261,7 +261,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
 		.print("--- --- --- --- --- Fin del juego --- --- --- --- ---").
 
-+!checkFinalWinner(W1,W2) : W1=none & W2=none <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganar� el jugador uno por ser el que abre la partida
++!checkFinalWinner(W1,W2) : W1=none & W2=none <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganar? el jugador uno por ser el que abre la partida
 
 +!checkFinalWinner(W1,W2) : W1=none <- -+finalWinner(W2).
 
@@ -341,7 +341,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-		.print("El agente ",P," externo a la partida est� intentando jugar.").
+		.print("El agente ",P," externo a la partida est? intentando jugar.").
 
 // Esta regla la podeis adecuar a vuestras necesidades
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <-
@@ -409,7 +409,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 //Finalizacion de un turno
 +turnoTerminado(Player) : level(L) & L=1 & (limitPoints(1,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=50) <- //Final del Nivel 1
-					.print("Alcanzado el n�mero m�ximo de puntos en el Nivel 1");
+					.print("Alcanzado el n?mero m?ximo de puntos en el Nivel 1");
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(1,Winner);
@@ -433,7 +433,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +turnoTerminado(Player) : level(L) & L=2 & (limitPoints(2,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=50) <- //Final del Nivel 2
-					.print("Alcanzado el n�mero m�ximo de puntos en el Nivel 2");
+					.print("Alcanzado el n?mero m?ximo de puntos en el Nivel 2");
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(2,Winner);
@@ -892,3 +892,4 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
+
