@@ -179,7 +179,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!comunicarJugada.
 
 //Envía al juez la jugada que quiere realizar
-+!comunicarJugada : cordX(X) & cordY(Y) & dirMax(Dir) <-
++!comunicarJugada : cordX(X) & cordY(Y) & dirMax(Dir)<-
 	.print("Quiero mover desde posicion (",X,",",Y,") en direccion ",Dir);
 	.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),Dir));
 	.send(judge,untell,moverDesdeEnDireccion(pos(X,Y),Dir)).
@@ -208,16 +208,19 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarDireccion(X,Y): Y<9 & X<9 <-
 
 	//Caso "down"
-	.abolish(explotada(X,Y));
+	!abolishExplotada;
 	!comprobarDown(X,Y);
 	!comprobarPuntosDown(X,Y);
 
 	//Caso "right"
-	.abolish(explotada(X,Y));
+	!abolishExplotada;
 	!comprobarRight(X,Y);
 	!comprobarPuntosRight(X,Y).
 
-+!comprobarDireccion(X,Y).
++!comprobarDireccion(X,Y).  
+
++!abolishExplotada <- 
+	.abolish(explotada(X,Y)).
 
 //Comprueba las consecuencias de un movimiento hacia abajo de la ficha en X,Y+1
 +!comprobarDown(X,Y) : tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
