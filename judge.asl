@@ -23,27 +23,41 @@ jugadorDescalificado(player2,0).
 
 recursivityFlag(1). //Flag utilizado como herramienta para implentar un mecanismo de recursividad en el algoritmo de explosion-gravedad-rellenado
 explosionFlag(1). // Cuando el jugador provoca directamente una explosion, el flag se activa. Si las explosiones se producen por caidas, permanece desactivado.
-dualExplosionFlag(0). //Flag que permite controlar situaciones de explosi?n de doble patron
+dualExplosionFlag(0). //Flag que permite controlar situaciones de explosion de doble patron
 
 level(1).
 
 obstacles(10). //Numero de obstaculos a generar
 
-limitPoints(1,100). //Puntuaci?n a obtener para ganar un nivel
-limitPoints(2,100).
+limitPoints(1,300). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,300).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
 points(1,player2,0).
 points(2,player1,0).
 points(2,player2,0).
 
-levelWinner(1,none).//Ganador del nivel
+levelWinner(1,none). //Ganador del nivel
 levelWinner(2,none).
 
-finalWinner(none).
+finalWinner(none). //Ganador del juego
 
-endGame(0). //Flag que indica la finalizaci?n del juego al terminar todos los niveles
+endGame(0). //Flag que indica la finalizacion del juego al terminar todos los niveles
 
+//Correspondencia entre el patron que explosiona y la ficha especial que se genera
+specialSteak("4inLineH",ip).
+specialSteak("4inLineW",ip).
+specialSteak("5inLineH",ct).
+specialSteak("5inLineW",ct).
+specialSteak("Square",gs).
+specialSteak("T",co).
+
+//Puntos por generacion de ficha
+generationPoints(in,0).
+generationPoints(ip,2).
+generationPoints(gs,4).
+generationPoints(co,6).
+generationPoints(ct,8).
 
 //Comprobacion completa de las condiciones de un movimiento correcto: Seleccion, movimiento y color
 movimientoValido(pos(X,Y),Dir):- tablero(celda(X,Y,_),ficha(COrigen,_)) & validacion(X,Y,Dir,COrigen).
@@ -83,7 +97,7 @@ nextPosition(P1,P2,Dir,NX,NY):-
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
 	((pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
 	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
-	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X & Direction="none") |
+	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
 	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
 	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW" & Direction="none") |
 	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
@@ -141,19 +155,19 @@ patternT(Color,X,Y,Direction) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
 	tablero(celda(X-1,Y,_),ficha(Color,_)) &
 	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!standing")/* & Direction = "standing"*/) |
+	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "standing") |
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
 	tablero(celda(X-1,Y,_),ficha(Color,_)) &
 	tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!down")/* & Direction = "upside-down"*/) |
+	tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
 	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
 	tablero(celda(X,Y+1,_),ficha(Color,_)) &
 	tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!right")/* & Direction = "pointing-right"*/) |
+	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "pointing-right") |
 	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
 	tablero(celda(X,Y+1,_),ficha(Color,_)) &
 	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & .print("!!!!!!!!!!!!!!!!left")/* & Direction = "pointing-left"*/).
+	tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "pointing-left").
 
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
@@ -197,8 +211,6 @@ pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	tablero(celda(X-1,Y,_),ficha(Color,_)) &
 	tablero(celda(X+1,Y,_),ficha(Color,_)) & StartsAtX = (X-2) & StartAtY = Y).
 
-
-//Reconoce un patron de 3 en horizontal, devuelve las coordenadas en las que se inicia el patron
 pattern3inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) & tablero(celda(X+2,Y,_),ficha(Color,_)) &
 	StartsAtX = X & StartAtY = Y) |
@@ -215,25 +227,10 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X,Y-1,_),ficha(Color,_)) & tablero(celda(X,Y+1,_),ficha(Color,_)) &
 	StartAtY = (Y-1) & StartsAtX = X).
 
-//Reconocimiento de posicion vacia bajo una ficha, a su izquierda o su derecha para el algoritmo de caida
+//Reconocimiento de celda vacia  para el algoritmo de caida y rodar
 emptyUnder(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X,Y+1,_),e).
 emptyLeft(X,Y) :- tablero(celda(X,Y,_),ficha(_,_)) & tablero(celda(X-1,Y,_),e).
 
-
-//Correspondencia entre el patron que explosiona y la ficha especial que se genera
-specialSteak("4inLineH",ip).
-specialSteak("4inLineW",ip).
-specialSteak("5inLineH",ct).
-specialSteak("5inLineW",ct).
-specialSteak("Square",gs).
-specialSteak("T",co).
-
-//Puntos por generacion de ficha
-generationPoints(in,0).
-generationPoints(ip,2).
-generationPoints(gs,4).
-generationPoints(co,6).
-generationPoints(ct,8).
 
 //Comprobacion del ganador de un nivel
 levelWinner(P1,P2,Winner) :- P1 > P2 & Winner = player1.
@@ -251,7 +248,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 //Finalizacion de la partida
 +!comienzoTurno : endGame(1) & levelWinner(1,W1) & levelWinner(2,W2)<-
-		.print(" *  *  * Resultados *  *  *");
+		.print(" *  *  *  *  *  *  *  *  * *  RESULTADOS  * *  *  *  *  *  *  *  *  *");
 		.print(" * Ganador Nivel 1 -> ",W1);
 		.print(" * Ganador Nivel 2 -> ",W2);
 		!checkFinalWinner(W1,W2);
@@ -261,15 +258,16 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
 		.print("--- --- --- --- --- Fin del juego --- --- --- --- ---").
 
-+!checkFinalWinner(W1,W2) : W1=none & W2=none <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganar? el jugador uno por ser el que abre la partida
+//Comprobacion del ganador de la partida
++!checkFinalWinner(W1,W2) : W1=draw & W2=draw <- -+finalWinner(player1). //Si hay empate en ambos niveles, ganara el jugador uno por ser el que abre la partida
 
-+!checkFinalWinner(W1,W2) : W1=none <- -+finalWinner(W2).
++!checkFinalWinner(W1,W2) : W1=draw <- -+finalWinner(W2). //Empate en el primer nivel, por lo tanto gana el jugador que ha ganado el segundo nivel
 
-+!checkFinalWinner(W1,W2) : W1=W2 <- -+finalWinner(W1).
++!checkFinalWinner(W1,W2) : W1=W2 <- -+finalWinner(W1). //Ambos niveles han sido ganados por el mismo jugador y por tanto es el ganador del juego
 
-+!checkFinalWinner(W1,W2) : points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & ((PointsPlayer1Lvl1+PointsPlayer1Lvl2) > (PointsPlayer2Lvl1+PointsPlayer2Lvl2)) <- -+finalWinner(player1).
++!checkFinalWinner(W1,W2) : points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & ((PointsPlayer1Lvl1+PointsPlayer1Lvl2) > (PointsPlayer2Lvl1+PointsPlayer2Lvl2)) <- -+finalWinner(player1). //Gana por total de puntos player1
 
-+!checkFinalWinner(W1,W2) : points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & ((PointsPlayer2Lvl1+PointsPlayer2Lvl2) > (PointsPlayer1Lvl1+PointsPlayer1Lvl2)) <- -+finalWinner(player2).
++!checkFinalWinner(W1,W2) : points(1,player1,PointsPlayer1Lvl1) & points(2,player1,PointsPlayer1Lvl2) & points(1,player2,PointsPlayer2Lvl1) & points(2,player2,PointsPlayer2Lvl2) & ((PointsPlayer2Lvl1+PointsPlayer2Lvl2) > (PointsPlayer1Lvl1+PointsPlayer1Lvl2)) <- -+finalWinner(player2). //Gana por total de puntos player2
 
 +!checkFinalWinner(W1,W2) <- .print("ERROR en !finalWinner").
 
@@ -384,8 +382,8 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 
-
-+startGame : size(N) <-
+//Gestion del comienzo del juego
++startGame : size(N) <- //Este plan se ejecutará cuando el entorno le avise al terminar la generacion del tablero
 				.print("Tablero de juego generado!");
 				.send(player1,tell,size(N));
 				.send(player2,tell,size(N));
@@ -401,7 +399,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 //Recepcion del tamanho del tablero
 +size(N).
 
-//Recepcion de la informacion de una posicion del tablero
+//Recepcion de la informacion de una posicion del tablero. Actua como interface para que las creencias tablero sean self
 +addTablero(Celda,Ficha)[source(percept)] <-
 				-addTablero(Celda,Ficha)[source(percept)];
 				+tablero(Celda,Ficha).
@@ -409,7 +407,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 //Finalizacion de un turno
 +turnoTerminado(Player) : level(L) & L=1 & (limitPoints(1,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=50) <- //Final del Nivel 1
-					.print("Alcanzado el n?mero m?ximo de puntos en el Nivel 1");
+					.print("Alcanzado el numero maximo de puntos en el Nivel 1");
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(1,Winner);
@@ -433,7 +431,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +turnoTerminado(Player) : level(L) & L=2 & (limitPoints(2,LimitPoints)  & points(L,Player,Points) & Points>=LimitPoints) | (jugadasRestantes(N) & N=0) |  (jugadasPlayer(Player,J) & J>=50) <- //Final del Nivel 2
-					.print("Alcanzado el n?mero m?ximo de puntos en el Nivel 2");
+					.print("Alcanzado el numero maximo de puntos en el Nivel 2");
 					!showPoints;
 					!checkLevelWinner;
 					?levelWinner(2,Winner);
@@ -523,14 +521,30 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 								exchange(C1,X1,Y1,C2,X2,Y2); //Intercambio de fichas en el tablero grafico
 								.print("Se han intercambiado las fichas entre las posiciones (",X1,",",Y1,") y (",X2,",",Y2,")");
 								//.wait(250); //Ajusta la velocidad del intercambio de fichas
-								-+recursivityFlag(1);//Deteccion y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado
+								-+recursivityFlag(1);
 								-+explosionFlag(1);
 								-+dualExplosionFlag(0);
 								-+posicionesIntercambiadas(X1,Y1,X2,Y2);
-								!fullPatternMatch;
+								!exchangedPatternMatch; //Deteccion y borrado de patrones en las dos posiciones intercambiadas								
+								!fullPatternMatch; //Deteccion y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado
 								//.wait(750);  //Ajusta la velocidad del intercambio de fichas
-								!updatePlayersTableroBB. //Actualizacion de la base del conocimiento de los players tras las la actualizacion del tablero al finalizar un turno
+								!updatePlayersTableroBB. //Actualizacion de la base del conocimiento de los players tras los eventos sucedidos en tablero durante un turno
 
++!exchangedPatternMatch : posicionesIntercambiadas(X1,Y1,X2,Y2) <- 
+							!patternMatchExchangedPosition(X1,Y1);
+							!patternMatchExchangedPosition(X2,Y2).
+
++!patternMatchExchangedPosition(X,Y) : comprobarPatrones(C,X,Y,StartsAtX,StartsAtY,Direction,Pattern) & Pattern = "T" <-
+										!handlePattern(C,StartsAtX,StartsAtY,Direction,"T");
+										.wait(350); // Ajusta el tiempo tras cada explosion
+										!setMovedSteak(X,Y,"T");
+										!generateSpecialSteak("T",C);
+										!gravity;
+										!refill;
+										-+recursivityFlag(1);//Reset de flags
+										-+explosionFlag(1);
+										-+dualExplosionFlag(0).
++!patternMatchExchangedPosition(X,Y).
 
 
 //Deteccion de patrones en todo el tablero
@@ -560,7 +574,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 +!patternMatchPosition(I,J).
 
 
-//Algoritmo de caida
+//Algoritmo de caida y rodar
 +!gravity : emptyUnder(_,_) & size(N) <-
 					for ( .range(X,0,(N-1)) ) {
 									for ( .range(Y,0,(N-1)) ) {
@@ -583,7 +597,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 	put(Color,X,Y+1,Tipo);
 	!fallAndRoll(X,Y+1).
 
-+!fallAndRoll(X,Y) : emptyLeft(X,Y) & tablero(celda(X,Y,Owner),ficha(Color,Tipo))<- //Se ha elegido que las fichas rueden hacia la izquierda para funcionar correctamente debido al orden de exploracion del tablero.
++!fallAndRoll(X,Y) : emptyLeft(X,Y) & tablero(celda(X,Y,Owner),ficha(Color,Tipo))<- //Se ha elegido que las fichas rueden hacia la izquierda para funcionar correctamente con el orden de exploracion del tablero establecido.
  	-tablero(celda(X,Y,Owner),ficha(Color,Tipo));
 	-tablero(celda(X-1,Y,Owner),e);
     +tablero(celda(X,Y,Owner),e);
@@ -598,7 +612,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 +!fall(X,Y).
 
 
-//Algoritmo de rellenado de celdas
+//Algoritmo de rellenado de celdas vacias con fichas generadas de color aleatorio
 +!refill : tablero(celda(_,0,_),e) & size(N) <- //Anhade una ficha en las posiciones (X,0) que esten libres y posteriormente aplica la caida
 		for ( .range(X,0,(N-1)) ) {
 			.random(Color,10);
@@ -635,7 +649,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 			.send(P,tell,Estructure);
 		 }.
 
-//Gestion de patrones
+//Gestion de explosion de patrones segun su tipo y colocacion en el tablero
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineH" <-
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
@@ -785,10 +799,10 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 			-tablero(celda(X,Y,_),_);
 			+tablero(celda(X,Y,0),m);
-			-+dualExplosionFlag(1). //Aunque se active el flag, solo se percibir? si explota otro patron contiguo
+			-+dualExplosionFlag(1). //Aunque se active el flag, solo se utilizara si explota otro patron contiguo
 +!setMovedSteak(X,Y,Pattern).
 
-//Generacion de la ficha especial acorde al patr?n que le corresponde tras una explosion
+//Generacion de la ficha especial acorde al patron que le corresponde tras una explosion
 +!generateSpecialSteak(Pattern,Color) : explosionFlag(1) & tablero(celda(X,Y,_),m) & specialSteak(Pattern,Type)<- //La explosion se produjo directamente por el movimiento del jugador, y la ficha especial se debe de colocar en la ficha movida.
 			put(Color,X,Y,Type);
 			-tablero(celda(X,Y,_),m);
@@ -796,13 +810,13 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 			!specialStickGenerationPoints(Type);
 			!dualExplosion.
 
-+!dualExplosion : dualExplosionFlag(F) & F=1 & tablero(celda(NX,NY,_),m)<-		// --- TODO --- Solucion a problema de dos explosiones contiguas???
++!dualExplosion : dualExplosionFlag(F) & F=1 & tablero(celda(NX,NY,_),m)<- //Gestion de la explosion de dos patrones contiguos para evitar problemas en la generacion de fichas especiales
 			-tablero(celda(NX,NY,_),m);
 			+tablero(celda(NX,NY,0),e);
 			-+dualExplosionFlag(0).
 +!dualExplosion.
 
-
+//Generacion de ficha especial por explosion de un patron
 +!generateSpecialSteak(Pattern,Color) : explosionFlag(0) & tablero(celda(X,Y,_),e) & specialSteak(Pattern,Type)<-  //La explosion se produjo de forma indirecta por la caida de fichas. La ficha especial se coloca de forma aleatoria por unificacion.
 			put(Color,X,Y,Type);
 			-tablero(celda(X,Y,_),e);
@@ -810,16 +824,16 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 			!specialStickGenerationPoints(Type).
 +!generateSpecialSteak(Pattern,Color).
 
-
+//Suma de los puntos correspondientes a la generacion de una ficha especial
 +!specialStickGenerationPoints(T) : generationPoints(T,NP) & turnoActual(A) & level(L) & points(L,A,P) <-
 				-points(L,A,P);
 				+points(L,A,P+NP).
 
 
 
-//Gestion de explosiones especiales y puntuaciones
+//Gestion de explosiones segun el tipo de ficha
 +!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & turnoActual(A) & level(L) & points(L,A,P)<-
-				-tablero(celda(X,Y,_),_);//Pimero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
+				-tablero(celda(X,Y,_),_);//Primero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
 				+tablero(celda(X,Y,0),e);
 				delete(C,X,Y);
 				!specialExplosion(X,Y,C,T,D,A,P,L).
