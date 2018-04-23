@@ -155,19 +155,19 @@ patternT(Color,X,Y,Direction) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
 	tablero(celda(X+2,Y,_),ficha(Color,_)) &
 	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X+1,Y+2,_),ficha(Color,_)) & Direction = "standing" & .wait(10000)) |
+	tablero(celda(X+1,Y+2,_),ficha(Color,_)) & Direction = "standing") |
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
 	tablero(celda(X+2,Y,_),ficha(Color,_)) &
 	tablero(celda(X+1,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X+1,Y-2,_),ficha(Color,_)) & Direction = "upside-down"  & .wait(10000)) |
+	tablero(celda(X+1,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
 	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
 	tablero(celda(X,Y+2,_),ficha(Color,_)) &
 	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X+2,Y+1,_),ficha(Color,_)) & Direction = "pointing-right" & .wait(10000)) |
+	tablero(celda(X+2,Y+1,_),ficha(Color,_)) & Direction = "pointing-right") |
 	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
 	tablero(celda(X,Y+2,_),ficha(Color,_)) &
 	tablero(celda(X-1,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X-2,Y+1,_),ficha(Color,_)) & Direction = "pointing-left" & .wait(10000)).
+	tablero(celda(X-2,Y+1,_),ficha(Color,_)) & Direction = "pointing-left").
 
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
@@ -724,57 +724,57 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "standing" <-
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX+1,StartsAtY);
-	delete(Color,StartsAtX-1,StartsAtY);
-	delete(Color,StartsAtX,StartsAtY+1);
-	delete(Color,StartsAtX,StartsAtY+2);
+	delete(Color,StartsAtX+2,StartsAtY);
+	delete(Color,StartsAtX+1,StartsAtY+1);
+	delete(Color,StartsAtX+1,StartsAtY+2);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY+2).
+	!explosion(StartsAtX+2,StartsAtY);
+	!explosion(StartsAtX+1,StartsAtY+1);
+	!explosion(StartsAtX+1,StartsAtY+2).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "upside-down" <-
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX+1,StartsAtY);
-	delete(Color,StartsAtX-1,StartsAtY);
-	delete(Color,StartsAtX,StartsAtY-1);
-	delete(Color,StartsAtX,StartsAtY-2);
+	delete(Color,StartsAtX+2,StartsAtY);
+	delete(Color,StartsAtX+1,StartsAtY-1);
+	delete(Color,StartsAtX+1,StartsAtY-2);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX,StartsAtY-2).
+	!explosion(StartsAtX+2,StartsAtY);
+	!explosion(StartsAtX+1,StartsAtY-1);
+	!explosion(StartsAtX+1,StartsAtY-2).
 
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-right" <-
 
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX,StartsAtY+1);
-	delete(Color,StartsAtX,StartsAtY-1);
-	delete(Color,StartsAtX+1,StartsAtY);
-	delete(Color,StartsAtX+2,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+2);
+	delete(Color,StartsAtX+1,StartsAtY+1);
+	delete(Color,StartsAtX+2,StartsAtY+1);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX+2,StartsAtY).
+	!explosion(StartsAtX,StartsAtY+2);
+	!explosion(StartsAtX+1,StartsAtY+1);
+	!explosion(StartsAtX+2,StartsAtY+1).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-left" <-
 
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX,StartsAtY+1);
-	delete(Color,StartsAtX,StartsAtY-1);
-	delete(Color,StartsAtX-1,StartsAtY);
-	delete(Color,StartsAtX-2,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+2);
+	delete(Color,StartsAtX-1,StartsAtY+1);
+	delete(Color,StartsAtX-2,StartsAtY+1);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX-2,StartsAtY).
+	!explosion(StartsAtX,StartsAtY+2);
+	!explosion(StartsAtX-1,StartsAtY+1);
+	!explosion(StartsAtX-2,StartsAtY+1).
 
 
 //Establecer celda como movida para generar sobre ella la ficha especial cuando la explosion es directamente realizada por el movimiento del jugador
