@@ -97,7 +97,7 @@ nextPosition(P1,P2,Dir,NX,NY):-
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
 	((pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
 	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
-	(patternT(Color,X,Y,StartsAtX,StartAtY,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
+	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
 	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
 	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW" & Direction="none") |
 	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
@@ -151,7 +151,7 @@ pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	tablero(celda(X+2,Y,_),ficha(Color,_)) &
 	tablero(celda(X+3,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-1)).
 
-patternT(Color,X,Y,StartsAtX,StartAtY,Direction) :-
+patternT(Color,X,Y,Direction) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
 	tablero(celda(X+2,Y,_),ficha(Color,_)) &
 	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
