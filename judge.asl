@@ -97,7 +97,7 @@ nextPosition(P1,P2,Dir,NX,NY):-
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
 	((pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineW" & Direction="none") |
 	(pattern5inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "5inLineH" & Direction="none") |
-	(patternT(Color,X,Y,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
+	(patternT(Color,X,Y,StartsAtX,StartAtY,Direction) & Pattern = "T" & StartAtY = Y & StartsAtX = X) |
 	(patternSquare(Color,X,Y,StartsAtX,StartAtY) & Pattern = "Square" & Direction="none") |
 	(pattern4inLineW(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineW" & Direction="none") |
 	(pattern4inLineH(Color,X,Y,StartsAtX,StartAtY) & Pattern = "4inLineH" & Direction="none") |
@@ -151,23 +151,23 @@ pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 	tablero(celda(X+2,Y,_),ficha(Color,_)) &
 	tablero(celda(X+3,Y,_),ficha(Color,_)) & StartAtY = Y & StartsAtX = (X-1)).
 
-patternT(Color,X,Y,Direction) :-
+patternT(Color,X,Y,StartsAtX,StartAtY,Direction) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "standing") |
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+2,_),ficha(Color,_)) & Direction = "standing" & .wait(10000)) |
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "pointing-right") |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "pointing-left").
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y-2,_),ficha(Color,_)) & Direction = "upside-down"  & .wait(10000)) |
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y+1,_),ficha(Color,_)) & Direction = "pointing-right" & .wait(10000)) |
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X-2,Y+1,_),ficha(Color,_)) & Direction = "pointing-left" & .wait(10000)).
 
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
@@ -525,26 +525,9 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 								-+explosionFlag(1);
 								-+dualExplosionFlag(0);
 								-+posicionesIntercambiadas(X1,Y1,X2,Y2);
-								!exchangedPatternMatch; //Deteccion y borrado de patrones en las dos posiciones intercambiadas								
 								!fullPatternMatch; //Deteccion y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado
 								//.wait(750);  //Ajusta la velocidad del intercambio de fichas
 								!updatePlayersTableroBB. //Actualizacion de la base del conocimiento de los players tras los eventos sucedidos en tablero durante un turno
-
-+!exchangedPatternMatch : posicionesIntercambiadas(X1,Y1,X2,Y2) <- 
-							!patternMatchExchangedPosition(X1,Y1);
-							!patternMatchExchangedPosition(X2,Y2).
-
-+!patternMatchExchangedPosition(X,Y) : comprobarPatrones(C,X,Y,StartsAtX,StartsAtY,Direction,Pattern) & Pattern = "T" <-
-										!handlePattern(C,StartsAtX,StartsAtY,Direction,"T");
-										.wait(350); // Ajusta el tiempo tras cada explosion
-										!setMovedSteak(X,Y,"T");
-										!generateSpecialSteak("T",C);
-										!gravity;
-										!refill;
-										-+recursivityFlag(1);//Reset de flags
-										-+explosionFlag(1);
-										-+dualExplosionFlag(0).
-+!patternMatchExchangedPosition(X,Y).
 
 
 //Deteccion de patrones en todo el tablero
@@ -884,7 +867,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 			}.
 
 +!coExplosion(X,Y) : tablero(celda(X,Y,_),ficha(C,_)) <-
-			  !explosion(X+I,Y+J);
+			  !explosion(X,Y);
 			  -tablero(celda(X,Y,_),_);
 			  +tablero(celda(X,Y,0),e);
 			  delete(C,X,Y).
