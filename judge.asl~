@@ -153,21 +153,21 @@ pattern5inLineW(Color,X,Y,StartsAtX,StartAtY) :-
 
 patternT(Color,X,Y,Direction) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+2,_),ficha(Color,_)) & Direction = "standing") |
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+2,_),ficha(Color,_)) & Direction = "standing") |
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X+1,Y,_),ficha(Color,_)) &
-	tablero(celda(X+2,Y,_),ficha(Color,_)) & Direction = "pointing-right") |
-	(tablero(celda(X,Y-1,_),ficha(Color,_)) &
-	tablero(celda(X,Y+1,_),ficha(Color,_)) &
-	tablero(celda(X-1,Y,_),ficha(Color,_)) &
-	tablero(celda(X-2,Y,_),ficha(Color,_)) & Direction = "pointing-left").
+	tablero(celda(X+2,Y,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y-1,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y-2,_),ficha(Color,_)) & Direction = "upside-down") |
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X+1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X+2,Y+1,_),ficha(Color,_)) & Direction = "pointing-right") |
+	(tablero(celda(X,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X,Y+2,_),ficha(Color,_)) &
+	tablero(celda(X-1,Y+1,_),ficha(Color,_)) &
+	tablero(celda(X-2,Y+1,_),ficha(Color,_)) & Direction = "pointing-left").
 
 patternSquare(Color,X,Y,StartsAtX,StartAtY) :-
 	(tablero(celda(X+1,Y,_),ficha(Color,_)) &
@@ -339,7 +339,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	not turnoActual(P) & not fueraTurno(P,N) <- // --- TODO ---
-		.print("El agente ",P," externo a la partida estï¿½ intentando jugar.").
+		.print("El agente ",P," externo a la partida est? intentando jugar.").
 
 // Esta regla la podeis adecuar a vuestras necesidades
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] <-
@@ -383,7 +383,7 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 //Gestion del comienzo del juego
-+startGame : size(N) <- //Este plan se ejecutarÃ¡ cuando el entorno le avise al terminar la generacion del tablero
++startGame : size(N) <- //Este plan se ejecutará cuando el entorno le avise al terminar la generacion del tablero
 				.print("Tablero de juego generado!");
 				.send(player1,tell,size(N));
 				.send(player2,tell,size(N));
@@ -525,26 +525,9 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 								-+explosionFlag(1);
 								-+dualExplosionFlag(0);
 								-+posicionesIntercambiadas(X1,Y1,X2,Y2);
-								!exchangedPatternMatch; //Deteccion y borrado de patrones en las dos posiciones intercambiadas
 								!fullPatternMatch; //Deteccion y borrado de todos los patrones, aplicacion del algoritmo de caida y rellenado
 								//.wait(750);  //Ajusta la velocidad del intercambio de fichas
 								!updatePlayersTableroBB. //Actualizacion de la base del conocimiento de los players tras los eventos sucedidos en tablero durante un turno
-
-+!exchangedPatternMatch : posicionesIntercambiadas(X1,Y1,X2,Y2) <-
-							!patternMatchExchangedPosition(X1,Y1);
-							!patternMatchExchangedPosition(X2,Y2).
-
-+!patternMatchExchangedPosition(X,Y) : comprobarPatrones(C,X,Y,StartsAtX,StartsAtY,Direction,Pattern) & Pattern = "T" <-
-										!handlePattern(C,StartsAtX,StartsAtY,Direction,"T");
-										.wait(350); // Ajusta el tiempo tras cada explosion
-										!setMovedSteak(X,Y,"T");
-										!generateSpecialSteak("T",C);
-										!gravity;
-										!refill;
-										-+recursivityFlag(1);//Reset de flags
-										-+explosionFlag(1);
-										-+dualExplosionFlag(0).
-+!patternMatchExchangedPosition(X,Y).
 
 
 //Deteccion de patrones en todo el tablero
@@ -651,7 +634,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 //Gestion de explosion de patrones segun su tipo y colocacion en el tablero
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineH" <-
-.print("3inLineH");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
@@ -661,7 +643,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 		!explosion(StartsAtX,StartsAtY+2).
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineW" <-
-.print("3inLineW");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+2,StartsAtY);
@@ -672,7 +653,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineH" <-
-.print("4inLineH");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
@@ -685,7 +665,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineW" <-
-.print("4inLineW");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+2,StartsAtY);
@@ -698,7 +677,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineH"<-
-.print("5inLineH");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
 		delete(Color,StartsAtX,StartsAtY+2);
@@ -713,7 +691,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineW" <-
-.print("5inLineW");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX+2,StartsAtY);
@@ -729,7 +706,6 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "Square" <-
-.print("Square");
 		delete(Color,StartsAtX,StartsAtY);
 		delete(Color,StartsAtX+1,StartsAtY);
 		delete(Color,StartsAtX,StartsAtY+1);
@@ -742,64 +718,63 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "T"<-
-.print("T");
 	!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern).
 
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "standing" <-
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX+1,StartsAtY);
-	delete(Color,StartsAtX-1,StartsAtY);
-	delete(Color,StartsAtX,StartsAtY+1);
-	delete(Color,StartsAtX,StartsAtY+2);
+	delete(Color,StartsAtX+2,StartsAtY);
+	delete(Color,StartsAtX+1,StartsAtY+1);
+	delete(Color,StartsAtX+1,StartsAtY+2);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY+2).
+	!explosion(StartsAtX+2,StartsAtY);
+	!explosion(StartsAtX+1,StartsAtY+1);
+	!explosion(StartsAtX+1,StartsAtY+2).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "upside-down" <-
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX+1,StartsAtY);
-	delete(Color,StartsAtX-1,StartsAtY);
-	delete(Color,StartsAtX,StartsAtY-1);
-	delete(Color,StartsAtX,StartsAtY-2);
+	delete(Color,StartsAtX+2,StartsAtY);
+	delete(Color,StartsAtX+1,StartsAtY-1);
+	delete(Color,StartsAtX+1,StartsAtY-2);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX,StartsAtY-2).
+	!explosion(StartsAtX+2,StartsAtY);
+	!explosion(StartsAtX+1,StartsAtY-1);
+	!explosion(StartsAtX+1,StartsAtY-2).
 
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-right" <-
 
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX,StartsAtY+1);
-	delete(Color,StartsAtX,StartsAtY-1);
-	delete(Color,StartsAtX+1,StartsAtY);
-	delete(Color,StartsAtX+2,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+2);
+	delete(Color,StartsAtX+1,StartsAtY+1);
+	delete(Color,StartsAtX+2,StartsAtY+1);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX+1,StartsAtY);
-	!explosion(StartsAtX+2,StartsAtY).
+	!explosion(StartsAtX,StartsAtY+2);
+	!explosion(StartsAtX+1,StartsAtY+1);
+	!explosion(StartsAtX+2,StartsAtY+1).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-left" <-
 
 	delete(Color,StartsAtX,StartsAtY);
 	delete(Color,StartsAtX,StartsAtY+1);
-	delete(Color,StartsAtX,StartsAtY-1);
-	delete(Color,StartsAtX-1,StartsAtY);
-	delete(Color,StartsAtX-2,StartsAtY);
+	delete(Color,StartsAtX,StartsAtY+2);
+	delete(Color,StartsAtX-1,StartsAtY+1);
+	delete(Color,StartsAtX-2,StartsAtY+1);
 
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
-	!explosion(StartsAtX,StartsAtY-1);
-	!explosion(StartsAtX-1,StartsAtY);
-	!explosion(StartsAtX-2,StartsAtY).
+	!explosion(StartsAtX,StartsAtY+2);
+	!explosion(StartsAtX-1,StartsAtY+1);
+	!explosion(StartsAtX-2,StartsAtY+1).
 
 
 //Establecer celda como movida para generar sobre ella la ficha especial cuando la explosion es directamente realizada por el movimiento del jugador
@@ -914,3 +889,4 @@ levelWinner(P1,P2,Winner) :- P1 = P2 & Winner = draw.
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
+
