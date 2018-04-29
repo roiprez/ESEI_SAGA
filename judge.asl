@@ -4,7 +4,7 @@
 
 /* ----- Initial beliefs and rules ------ */
 
-jugadasRestantes(2). // --- TODO --- Individualizar por niveles
+jugadasRestantes(15). // --- TODO --- Individualizar por niveles
 
 jugadasPlayer(player1,0).
 jugadasPlayer(player2,0).
@@ -28,12 +28,12 @@ dualExplosionFlag(0). //Flag que permite controlar situaciones de explosion de d
 level(1).
 
 obstacles(2,15). //Numero de obstaculos a generar [obstacles(level,numberOfObstacles)]
-obstacles(3,10).
+obstacles(3,0). // --- TODO --- Volver a poner obstáculos al nivel 3
 
 territorioInicial(20). //Territorio inicial asignado a cada jugador al comienzo del nivel 3 // --- TODO ---
 
-limitPoints(1,100). //Puntuacion a obtener para ganar un nivel
-limitPoints(2,200).
+limitPoints(1,1). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,2).
 limitPoints(3,200).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
@@ -278,7 +278,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 		.print(" * Ganador de la partida -> ",FinalWinner," !!");
 		.print(" *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  * *  *  *  *  *  *  *  *  *");
 		.print("--- --- --- --- --- Fin del juego --- --- --- --- ---").
-		
+
 //Finalizacion de un nivel por alcanzar el limite de jugadas
 +!comienzoTurno: (level(1) & (jugadasRestantes(N) & N=0)) |  ( level(1) &  jugadasPlayer(Player,J) & J>=15 ) <- //Final del Nivel 1
 						.print("Se ha alcanzado el numero maximo de jugadas del nivel 1");
@@ -328,7 +328,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 				?nivelesGanados(player1,NG1);
 				?nivelesGanados(player2,NG2);
 				!decideWinner(NG1,NG2).
-				
+
 +!decideWinner(W1,W2) : W1 > W2 <- -+finalWinner(player1).
 +!decideWinner(W1,W2) : W2 > W1 <- -+finalWinner(player2).
 +!decideWinner(W1,W2) : W1 = W2 <- !countTotalPoints.
@@ -347,7 +347,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 				-totalPoints(player2,TP2);
 				+totalPoints(player2,TP2+P21+P22+P23);
 				!decideByTotalPoints(TP1+P11+P12+P13,TP2+P21+P22+P23).
-				
+
 +!decideByTotalPoints(P1,P2) : P1 > P2 <- -+finalWinner(player1).
 +!decideByTotalPoints(P1,P2) : P2 > P1 <- -+finalWinner(player2).
 +!decideByTotalPoints(P1,P2) <- -+finalWinner(player1). //En ultimo caso, gana player1 por abrir la partida
@@ -491,7 +491,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 
 
 //Finalizacion de un turno
-+turnoTerminado(Player) : (level(1) & (limitPoints(1,LimitPoints) & points(1,Player,Points) & Points>=LimitPoints)) | (level(1) & (jugadasRestantes(N) & N=0)) |  ( level(1) &  jugadasPlayer(Player,J) & J>=15 ) <- //Final del Nivel 1
++turnoTerminado(Player) : (level(1) & limitPoints(1,LimitPoints) & points(1,Player,Points) & Points>=LimitPoints) | (level(1) & jugadasRestantes(N) & N=0) |  ( level(1) & jugadasPlayer(Player,J) & J>=15 ) <- //Final del Nivel 1
 					.print("Alcanzado el objetivo del Nivel 1");
 					!generateLevel2.
 
@@ -500,8 +500,8 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					.print("Alcanzado el objtivo del Nivel 2");
 					!generateLevel3.
 
-					
-+turnoTerminado(Player) : (level(3) & limitPoints(3,LimitPoints)  &  points(3,Player,Points) & Points>=LimitPoints & tableroDominado(Player) & not Player=none) | (level(3) & jugadasRestantes(N) & N=0) |  (level(3) & jugadasPlayer(Player,J) & J>=20) <- //Final del Nivel 3				
+
++turnoTerminado(Player) : (level(3) & limitPoints(3,LimitPoints)  &  points(3,Player,Points) & Points>=LimitPoints & tableroDominado(Player) & not Player=none) | (level(3) & jugadasRestantes(N) & N=0) |  (level(3) & jugadasPlayer(Player,J) & J>=20) <- //Final del Nivel 3
 					.print("Alcanzado el objetivo del Nivel 3");
 					!showPoints;
 					// --- TODO --- Show Territory
@@ -518,7 +518,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					.wait(1000);
 					-+level(2);
 					-+turnoActual(player1);
-					-+jugadasRestantes(2); // --- TODO --- Revisar
+					-+jugadasRestantes(20); // --- TODO --- Revisar
 					-jugadasPlayer(player1,_);
 					+jugadasPlayer(player1,0);
 					-jugadasPlayer(player2,_);
@@ -529,16 +529,20 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					.wait(250);
 					!generateObstacles;
 					!updatePlayersTableroBB.
-					
+
 +!generateLevel3 <- !showPoints;
 					!checkLevelWinner;
 					?levelWinner(2,Winner);
 					.print("[ GANADOR NIVEL 2: ",Winner," ]\n");
 					.print("                      ----- ----- ----- NIVEL 3 ----- ----- -----\n");
+					.send(player1,tell,nivel(3));
+					.send(player2,tell,nivel(3));
+					.send(player1,tell,playerOwner(1));
+					.send(player2,tell,playerOwner(2));
 					.wait(1000);
 					-+level(3);
 					-+turnoActual(player1);
-					-+jugadasRestantes(40); // --- TODO --- Revisar
+					-+jugadasRestantes(20); // --- TODO --- Revisar
 					-jugadasPlayer(player1,_);
 					+jugadasPlayer(player1,0);
 					-jugadasPlayer(player2,_);
@@ -549,11 +553,11 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					.wait(250);
 					!generateObstacles; //Generacion de obstaculos
 					?territorioInicial(T1);
-					!generateOwnedTerritory(player1,T1); //Generacion del territorio inicial poseido				
+					!generateOwnedTerritory(player1,T1); //Generacion del territorio inicial poseido
 					?territorioInicial(T2);
 					!generateOwnedTerritory(player2,T2);
 					!updatePlayersTableroBB.
-					
+
 +turnoTerminado(P): jugadorDescalificado(J,B) & B=1 <-
 					!showPoints;
 					!cambioTurnoMismoJugador(P,N,J). //Cambio de turno sobre el mismo jugador, ya que hay un jugador descalificado
@@ -570,18 +574,18 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 +!checkLevelWinner : level(3) & limitPoints(3,LimitPoints) & turnoActual(Player) & points(3,Player,Points) & Points>=LimitPoints & tableroDominado(Player) & not Player=none <- //Ganador en Nivel 3 por poseer todo el tablero y alcanzar el limite de puntos
 				-levelWinner(3,_);
 				+levelWinner(3,Player).
-				
-				
+
+
 +!checkLevelWinner : level(3) <-
 				!checkWinnerLevel3.
-				
+
 +!checkWinnerLevel3 : territorio(player1,T1) & territorio(player2,T2) & T1>T2 <- //Mayor territorio en posesion Player1
 				-levelWinner(3,_);
 				+levelWinner(3,player1).
 
 +!checkWinnerLevel3 : territorio(player1,T1) & territorio(player2,T2) & T2>T1 <- //Mayor territorio en posesion Player2
 				-levelWinner(3,_);
-				+levelWinner(3,player2).				
+				+levelWinner(3,player2).
 
 +!checkWinnerLevel3 : points(3,player1,P1) & points(3,player2,P2) & levelWinner(P1,P2,Winner) & not Winner=draw <- //Empate por territorio poseido, entonces desempate por puntos
 				-levelWinner(3,_);
@@ -590,13 +594,13 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 +!checkWinnerLevel3 : points(3,player1,P1) & points(3,player2,P2) & levelWinner(P1,P2,Winner) & Winner=draw <- //En caso de empate por puntos, gana Player1 por abrir la partida
 				-levelWinner(3,_);
 				+levelWinner(3,player1).
-				
+
 +!checkWinnerLevel3 <- .print("ERROR: !checkWinnerLevel3"). //Salvaguarda
-				
+
 +!checkLevelWinner : level(L) & points(L,player1,P1) & points(L,player2,P2) &  levelWinner(P1,P2,Winner) <- // --- TODO --- Revisar que no se ha modificado!!
 				-levelWinner(L,_);
 				+levelWinner(L,Winner).
-				
+
 
 
 
@@ -661,7 +665,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					-tablero(celda(X,Y,_),ficha(C,T));
 					+tablero(celda(X,Y,OwnerNumber),ficha(C,T));
 					setOwner(X,Y,OwnerNumber).
-					
+
 +!generateOwner(X,Y,Owner) <- //En caso de solapamiento, vuelve a generar otra posicion
 					.random(V,10);
 					.random(W,10);
@@ -785,9 +789,9 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 			.send(player2,untell,deleteTableroBB);
 			!mostrarTablero(player1);
 			!mostrarTablero(player2).
-			
+
 //Actualizacion de los marcadores de territorio en posesion // --- TODO ---
-+!countOwnedCells : level(3) & size(N) <- //Solo se realiza el cálculo para el Nivel 3
++!countOwnedCells : level(3) & size(N) <- //Solo se realiza el c?lculo para el Nivel 3
 								-territorio(player1,_);
 								+territorio(player1,0);
 								-territorio(player2,_);
@@ -802,8 +806,8 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 			-territorio(OwnerName,N);
 			+territorio(OwnerName,N+1).
 +!owner(X,Y).
-			
-+!countOwnedCells. //Para los Niveles 1 y 2 no se realiza el cálculo
+
++!countOwnedCells. //Para los Niveles 1 y 2 no se realiza el c?lculo
 
 +!checkTableroDominado : size(N) & obstacles(O) & territorio(player1,T) & T=N*N-O <- -+tableroDominado(player1).
 
@@ -1084,5 +1088,4 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 //Plan por defecto a ejecutar en caso desconocido.
 +Default[source(A)]: not A=self  <- .print("He recibido el mensaje '",Default, "', pero no lo entiendo!");
 									-Default[source(A)].
-
 

@@ -187,7 +187,9 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comunicarJugada.
 
 //Comprueba el estado del tablero para buscar la jugada óptima, si no hay una jugada que de puntuación, hace una aleatoria.
+//celdasMax sólo se utilizará para el nivel(3)
 +!pensarJugada  <-
+	-+celdasMax(0);
 	-+puntosMax(0);
 	-+puntos(0);
 	-+direction("none");
@@ -266,22 +268,58 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comprobarRight(X,Y).
 
++!comprobarPuntosDown(X,Y) : nivel(3) & puntosTotalJugada(PuntosDown) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
+	-+celdasAct(Celdas);
+	-+puntos(PuntosDown);
+	-+direction("down").
+	
++!comprobarPuntosDown(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
+		& puntosTotalJugada(PuntosDown) &  puntos(Puntos) & PuntosDown > Puntos <-
+	-+puntos(PuntosDown);
+	-+direction("down").
+	
 //Comprueba si la jugada hacia abajo ha superado la jugada anterior de más puntos
-+!comprobarPuntosDown(X,Y) : puntosTotalJugada(PuntosDown) & puntos(Puntos) & PuntosDown > Puntos <-
++!comprobarPuntosDown(X,Y) : not nivel(3) & puntosTotalJugada(PuntosDown) & puntos(Puntos) & PuntosDown > Puntos <-
 	-+puntos(PuntosDown);
 	-+direction("down").
 
 +!comprobarPuntosDown(X,Y).
 
++!comprobarPuntosRight(X,Y) : nivel(3) & puntosTotalJugada(PuntosRight) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
+	-+celdasAct(Celdas);
+	-+puntos(PuntosRight);
+	-+direction("right").
+	
++!comprobarPuntosRight(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
+		& puntosTotalJugada(PuntosRight) &  puntos(Puntos) & PuntosRight > Puntos <-
+	-+puntos(PuntosRight);
+	-+direction("right").
+
 //Comprueba si la jugada hacia la derecha ha superado la jugada anterior de más puntos
-+!comprobarPuntosRight(X,Y) : puntosTotalJugada(PuntosRight) & puntos(Puntos) & PuntosRight > Puntos <-
++!comprobarPuntosRight(X,Y) : not nivel(3) & puntosTotalJugada(PuntosRight) & puntos(Puntos) & PuntosRight > Puntos <-
 	-+puntos(PuntosRight);
 	-+direction("right").
 
 +!comprobarPuntosRight(X,Y).
 
+//Si el número de celdas que se consiguen es superior al anterior se actualizan los valores
++!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & celdasMax(Cmax) & celdasAct(Cact) & Cact > Cmax <-
+	-+cordX(X);
+	-+cordY(Y);
+	-+celdasMax(Cact);
+	-+puntosMax(Puntos);
+	-+dirMax(Dir).
+
+//Si el número de celdas es el mismo, pero el número de puntos es mayor se actualizan los valores
++!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax & 
+		celdasMax(Cmax) & celdasAct(Cact) & Cact = Cmax <-
+	-+cordX(X);
+	-+cordY(Y);
+	-+puntosMax(Puntos);
+	-+dirMax(Dir).
+
 //Comprueba que se ha mejorado la puntuación con la comprobación anterior y se guardan los datos de esta
-+!comprobarPuntos(X,Y) : puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax <-
++!comprobarPuntos(X,Y) : not nivel(3) & puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax <-
 	-+cordX(X);
 	-+cordY(Y);
 	-+puntosMax(Puntos);
@@ -385,9 +423,23 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	+explotada(X,Y);
 	!specialExplosion(X,Y,C,T,D).
 
++!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) 
+		& playerOwner(Own) & not Owner = Own & celdasTotalJugada(C) <-
+    -+puntosTotalJugada(P+1);
+	-+celdasTotalJugada(C+1).	
+	
 +!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P)<-
     -+puntosTotalJugada(P+1).
-
+	
++!specialExplosion(X,Y,C,T,D) : T = ip  & (D="up" | D="down") & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) 
+		& playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-     //Explosion en linea vertical
+	+explotada(X,Y);
+	-+celdasTotalJugada(C+1);
+	-+puntosTotalJugada(P+2);
+	.findall(tablero(celda(X,NY,_),ficha(NC,_)),tablero(celda(X,NY,_),ficha(NC,_)),Lista);
+	for(.member(tablero(celda(X,NY,_),ficha(NC,_)),Lista)){
+		!explosion(X,NY);
+	}.
 
 +!specialExplosion(X,Y,C,T,D) : T = ip  & (D="up" | D="down") & puntosTotalJugada(P)<-     //Explosion en linea vertical
 	+explotada(X,Y);
@@ -395,6 +447,16 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	.findall(tablero(celda(X,NY,_),ficha(NC,_)),tablero(celda(X,NY,_),ficha(NC,_)),Lista);
 	for(.member(tablero(celda(X,NY,_),ficha(NC,_)),Lista)){
 		!explosion(X,NY);
+	}.
+	
++!specialExplosion(X,Y,C,T,D) : T = ip  & (D="left" | D="right") & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) 
+		& playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-     //Explosion en linea horizontal
+	+explotada(X,Y);
+	-+celdasTotalJugada(C+1);
+	-+puntosTotalJugada(P+2);
+	.findall(tablero(celda(NX,Y,_),ficha(NC,_)),tablero(celda(NX,Y,_),ficha(NC,_)),Lista);
+	for(.member(tablero(celda(NX,Y,_),ficha(NC,_)),Lista)){
+		!explosion(NX,Y);
 	}.
 
 +!specialExplosion(X,Y,C,T,D) : T = ip  & (D="left" | D="right") & puntosTotalJugada(P)<-     //Explosion en linea horizontal
@@ -404,12 +466,27 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	for(.member(tablero(celda(NX,Y,_),ficha(NC,_)),Lista)){
 		!explosion(NX,Y);
 	}.
+	
++!specialExplosion(X,Y,C,T,D) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY & puntosTotalJugada(P) & nivel(3)
+		& tablero(celda(X,Y,Owner),ficha(Color,Tipo)) & playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-	 //Explosion de una ficha del mismo color (distinta a si misma)
+	-+celdasTotalJugada(C+1);
+	-+puntosTotalJugada(P+4);
+	!explosion(NX,NY).
 
 +!specialExplosion(X,Y,C,T,D) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY & puntosTotalJugada(P)<-	 //Explosion de una ficha del mismo color (distinta a si misma)
 	-+puntosTotalJugada(P+4);
 	!explosion(NX,NY).
 
-
++!specialExplosion(X,Y,C,T,D) : T = co & puntosTotalJugada(P) & nivel(3)
+		& tablero(celda(X,Y,Owner),ficha(Color,Tipo)) & playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-  			//Explosion en cuadrado 3x3
+	-+celdasTotalJugada(C+1);
+	-+puntosTotalJugada(P+6);
+	for ( .range(I,-1,1) ) {
+		for ( .range(J,-1,1) ) {
+			!coExplosion(X+I,Y+J);
+		};
+	}.
+	
 +!specialExplosion(X,Y,C,T,D) : T = co & puntosTotalJugada(P)<-  			//Explosion en cuadrado 3x3
 	-+puntosTotalJugada(P+6);
 	for ( .range(I,-1,1) ) {
@@ -422,6 +499,16 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	  !explosion(X,Y).
 
 +!coExplosion(X,Y).
+
++!specialExplosion(X,Y,C,T,D) : T = ct & puntosTotalJugada(P) & nivel(3)
+		& tablero(celda(X,Y,Owner),ficha(Color,Tipo)) & playerOwner(Own) & not Owner = Own & celdasTotalJugada(C) <-     //Explosion de todas las fichas de ese color
+	+explotada(X,Y);
+	-+celdasTotalJugada(C+1);
+	-+puntosTotalJugada(P+8);
+	.findall(tablero(celda(NX,NY,_),ficha(C,_)),tablero(celda(NX,NY,_),ficha(C,_)),Lista);
+	for(.member(tablero(celda(NX,NY,_),ficha(C,_)),Lista)){
+		!explosion(NX,NY);
+	}.
 
 +!specialExplosion(X,Y,C,T,D) : T = ct & puntosTotalJugada(P) <-     //Explosion de todas las fichas de ese color
 	+explotada(X,Y);

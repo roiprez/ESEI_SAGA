@@ -196,12 +196,12 @@ public class Tablero extends Environment {
 
       public TableroView(TableroModel model) {
         super(model, "Tablero", 400);
-        defaultFont = new Font("Arial", Font.BOLD, 12); //Modificar parámetros para una mejor visualizacion
+        defaultFont = new Font("Arial", Font.BOLD, 12); //Modificar par?metros para una mejor visualizacion
         setVisible(true);
         repaint();
       }
 
-      //Métodos de generacion visual de fichas y obstaculos
+      //M?todos de generacion visual de fichas y obstaculos
       @Override
       public void draw(Graphics g, int x, int y, int object) {
         if(steakType[x][y].equals("in")){
@@ -295,4 +295,5 @@ public class Tablero extends Environment {
     } //End of Class [Tablero View]
 
   } // End of Class [Tablero Environment]
+
 

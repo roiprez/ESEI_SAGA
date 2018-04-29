@@ -190,6 +190,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //celdasMax sólo se utilizará para el nivel(3)
 +!pensarJugada  <-
 	-+celdasMax(0);
+	-+celdasAct(0);
 	-+puntosMax(0);
 	-+puntos(0);
 	-+direction("none");
@@ -235,6 +236,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	?comprobarPatrones(ColorDown,X,Y,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	?comprobarPatrones(Color,X,Y+1,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
+	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);
 	!handlePattern(ColorDown,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
@@ -257,6 +259,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	?comprobarPatrones(ColorRight,X,Y,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	?comprobarPatrones(Color,X+1,Y,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
+	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);
 	!handlePattern(ColorRight,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
@@ -269,6 +272,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarRight(X,Y).
 
 +!comprobarPuntosDown(X,Y) : nivel(3) & puntosTotalJugada(PuntosDown) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
+	.print(Celdas);
 	-+celdasAct(Celdas);
 	-+puntos(PuntosDown);
 	-+direction("down").
@@ -286,6 +290,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarPuntosDown(X,Y).
 
 +!comprobarPuntosRight(X,Y) : nivel(3) & puntosTotalJugada(PuntosRight) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
+	.print(Celdas);	
 	-+celdasAct(Celdas);
 	-+puntos(PuntosRight);
 	-+direction("right").
@@ -304,6 +309,8 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Si el número de celdas que se consiguen es superior al anterior se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & celdasMax(Cmax) & celdasAct(Cact) & Cact > Cmax <-
+	.print("Cmax nuevo: ", Cact);
+	.print("Puntos: ", Puntos);
 	-+cordX(X);
 	-+cordY(Y);
 	-+celdasMax(Cact);
@@ -313,6 +320,8 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Si el número de celdas es el mismo, pero el número de puntos es mayor se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax & 
 		celdasMax(Cmax) & celdasAct(Cact) & Cact = Cmax <-
+	.print("Cmax invariable: ", Cact);
+	.print("Puntos: ", Puntos);
 	-+cordX(X);
 	-+cordY(Y);
 	-+puntosMax(Puntos);
@@ -531,6 +540,14 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +tablero(Celda,Ficha)[source(judge)] <-  //Actua como interface para que las creencias contenidas en la base del conocimiento sean "self" y evitar posibles errores en las tomas de decisiones
 	-tablero(Celda,Ficha)[source(judge)];
 	+tablero(Celda,Ficha).
+	
++nivel(N)[source(judge)] <-  
+	-nivel(N)[source(judge)];
+	+nivel(N).
+
++playerOwner(N)[source(judge)] <-  
+	-playerOwner(N)[source(judge)];
+	+playerOwner(N).	
 
 //Movimiento realizado correctamente
 +valido[source(judge)] <- .print("He hecho una buena jugada!").
