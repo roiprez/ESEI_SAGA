@@ -162,12 +162,12 @@ public class Tablero extends Environment {
       void delete(int color,int x, int y) throws Exception { //Borrado de ficha
         steakType[x][y]="";
         int codColor = getEnvironmentColor(color);
-        set(EMPTY,x,y); //remove(codColor,x,y); //Así se consigue que la celda permanezca con el propietario marcado
+        set(EMPTY,x,y); //remove(codColor,x,y); //As? se consigue que la celda permanezca con el propietario marcado
       }
 
       void put(int c, int x, int y,String t) throws Exception { //Establecer ficha
         steakType[x][y]=t;
-				set(getEnvironmentColor(c),x,y);
+		set(getEnvironmentColor(c),x,y);
       }
 
       void putObstacle(int x, int y){ //establecer obstaculo
@@ -177,6 +177,7 @@ public class Tablero extends Environment {
 
       void setOwner(int x, int y, int owner){
         cellOwner[x][y]=owner;
+		    view.repaint();
       }
 
       //Interface de colores entre el juez y el entorno
@@ -210,7 +211,7 @@ public class Tablero extends Environment {
     class TableroView extends GridWorldView {
 
       public TableroView(TableroModel model) {
-        super(model, "Tablero", 400);
+        super(model, "Tablero", 600);
         defaultFont = new Font("Arial", Font.BOLD, 12); //Modificar par?metros para una mejor visualizacion
         setVisible(true);
         repaint();
@@ -230,16 +231,18 @@ public class Tablero extends Environment {
 
         public void drawCellOwner(Graphics g, int x, int y){
           switch(cellOwner[x][y]){
-            case 1: //Territorio de Player1 marcado en color Azul
-            g.setColor(Color.blue);
+            case 1: //Territorio de Player1 marcado en color:
+            g.setColor(new Color(105,182,255)); //Azul Claro
             g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH);
             break;
-            case 2: //Territorio de Player2 marcado en color Rojo
-            g.setColor(Color.red);
+            case 2: //Territorio de Player2 marcado en color:
+            //g.setColor(new Color(255,255,145)); //Amarillo Claro
+            //g.setColor(new Color(255,205,125)); //Beige
+            g.setColor(new Color(195,255,125)); //Verde Claro
             g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH);
             break;
           }
-          g.clearRect(x*cellSizeW+5,y*cellSizeH+5,cellSizeW-10,cellSizeH-10);
+          //g.clearRect(x*cellSizeW+5,y*cellSizeH+5,cellSizeW-10,cellSizeH-10); //Descomentar si se desea que el territorio se marque solo con un marco de color alrededor de la celda
         }
 
       public void drawSteak(Graphics g, int x, int y, int object) {

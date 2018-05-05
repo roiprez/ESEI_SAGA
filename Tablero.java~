@@ -34,6 +34,8 @@ public class Tablero extends Environment {
   public static final int ORANGESTEAK  = 256;
   public static final int MAGENTASTEAK  = 512;
   public static final int OBSTACLE  = 1024;
+  public static final int EMPTY  = 2048;
+
 
 
   private Logger logger = Logger.getLogger("Tablero.mas2j."+Tablero.class.getName());
@@ -42,6 +44,8 @@ public class Tablero extends Environment {
   private TableroView  view;
 
   String [][] steakType = new String[GSize][GSize];
+  int [][] cellOwner = new int[GSize][GSize];
+
 
   @Override
   public void init(String[] args) {
@@ -98,6 +102,12 @@ public class Tablero extends Environment {
           y = (int)((NumberTerm)message.getTerm(1)).solve();
           model.putObstacle(x,y);
           break;
+          case("setOwner"): //Establecer propiedad de una celda
+          x = (int)((NumberTerm)message.getTerm(0)).solve();
+          y = (int)((NumberTerm)message.getTerm(1)).solve();
+          int owner = (int)((NumberTerm)message.getTerm(2)).solve();
+          model.setOwner(x,y,owner);
+          break;
         }
       } else { //Recepcion de un mensaje de otro agente que no sea el juez
         logger.info("Se ha recibido una peticion ilegal. "+ agent +" no puede realizar la accion: "+ message);
@@ -127,6 +137,7 @@ public class Tablero extends Environment {
         for(int i = 0; i < GSize; i++){
           for(int j = 0; j < GSize; j++){
             steakType[i][j]="in";
+            cellOwner[i][j]=0;
             set(color,i,j);
             int judgeColor = getJudgeColor(color);
             addPercept("judge",Literal.parseLiteral("addTablero(celda(" + i + "," + j + ",0),ficha(" + judgeColor + ",in))")); //Envio de la informacion correspondiente a la generacion de una posicion del tablero
@@ -151,7 +162,7 @@ public class Tablero extends Environment {
       void delete(int color,int x, int y) throws Exception { //Borrado de ficha
         steakType[x][y]="";
         int codColor = getEnvironmentColor(color);
-        remove(codColor,x,y);
+        set(EMPTY,x,y); //remove(codColor,x,y); //As? se consigue que la celda permanezca con el propietario marcado
       }
 
       void put(int c, int x, int y,String t) throws Exception { //Establecer ficha
@@ -162,6 +173,10 @@ public class Tablero extends Environment {
       void putObstacle(int x, int y){ //establecer obstaculo
         steakType[x][y]="obstacle";
         set(OBSTACLE,x,y);
+      }
+
+      void setOwner(int x, int y, int owner){
+        cellOwner[x][y]=owner;
       }
 
       //Interface de colores entre el juez y el entorno
@@ -204,6 +219,7 @@ public class Tablero extends Environment {
       //M?todos de generacion visual de fichas y obstaculos
       @Override
       public void draw(Graphics g, int x, int y, int object) {
+        drawCellOwner(g,x,y);
         if(steakType[x][y].equals("in")){
           drawSteak(g, x, y, object);
         }
@@ -211,6 +227,22 @@ public class Tablero extends Environment {
           drawSpecialSteak(g, x, y,object);
         }
       }
+
+        public void drawCellOwner(Graphics g, int x, int y){
+          switch(cellOwner[x][y]){
+            case 1: //Territorio de Player1 marcado en color:
+            g.setColor(new Color(105,182,255)); //Azul Claro
+            g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH);
+            break;
+            case 2: //Territorio de Player2 marcado en color:
+            //g.setColor(new Color(255,255,145)); //Amarillo Claro
+            //g.setColor(new Color(255,205,125)); //Beige
+            g.setColor(new Color(195,255,125)); //Verde Claro
+            g.fillRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH);
+            break;
+          }
+          //g.clearRect(x*cellSizeW+5,y*cellSizeH+5,cellSizeW-10,cellSizeH-10); //Descomentar si se desea que el territorio se marque solo con un marco de color alrededor de la celda
+        }
 
       public void drawSteak(Graphics g, int x, int y, int object) {
         switch (object) {
@@ -289,11 +321,10 @@ public class Tablero extends Environment {
       public void drawObstacle(Graphics g, int x, int y){
         g.setColor(Color.darkGray);
         g.fillRoundRect(x*cellSizeW,y*cellSizeH,cellSizeW,cellSizeH,15,15);
-        g.setColor(Color.black);
-        //drawString(g,x,y,new Font("Arial", Font.BOLD, 50),"*"); //Descomentar si se desea relleno de los obstaculos para una mejor visualizacion
+        //g.setColor(Color.black); //Descomentar si se desea relleno de los obstaculos para una mejor visualizacion
+        //drawString(g,x,y,new Font("Arial", Font.BOLD, 50),"*");
       }
     } //End of Class [Tablero View]
 
   } // End of Class [Tablero Environment]
-
 
