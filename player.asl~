@@ -6,6 +6,8 @@
 
 /* Initial beliefs and rules */
 
+actualPatternOwner(0).  //Determina el owner actual del patrón.
+
 //Da una jugada aleatoria desde las coordenadas X1,Y1 y en direcci?n Dir
 pensarJugadaAleatoria(X1,Y1,Dir):-
 	size(N)&
@@ -226,19 +228,25 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	.abolish(explotada(X,Y)).
 
 //Comprueba las consecuencias de un movimiento hacia abajo de la ficha en X,Y+1
-+!comprobarDown(X,Y) : tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
++!comprobarDown(X,Y) : tablero(celda(X,Y+1,OwnerDown),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,Owner),ficha(Color,Tipo))<-
 
-	-tablero(celda(X,Y+1,_),ficha(ColorDown,TipoDown));
-	-tablero(celda(X,Y,_),ficha(Color,Tipo));
-	+tablero(celda(X,Y+1,0),ficha(Color,Tipo));
-	+tablero(celda(X,Y,0),ficha(ColorDown,TipoDown));
+	-tablero(celda(X,Y+1,OwnerDown),ficha(ColorDown,TipoDown));
+	-tablero(celda(X,Y,Owner),ficha(Color,Tipo));
+	+tablero(celda(X,Y+1,OwnerDown),ficha(Color,Tipo));
+	+tablero(celda(X,Y,Owner),ficha(ColorDown,TipoDown));
 
 	?comprobarPatrones(ColorDown,X,Y,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	?comprobarPatrones(Color,X,Y+1,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
 	-+celdasTotalJugada(0);
-	-+puntosTotalJugada(0);
+	-+puntosTotalJugada(0);         
+	
+	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
 	!handlePattern(ColorDown,StartsAtX1,StartsAtY1,Direction1,Pattern1);
+	!parseOwnerValue(Owner);
+	?celdasTotalJugada(Celdas);
+	.print("Celdas conseguidas para abajo: ", Celdas, " en (",X,",",Y,")");
+	
 	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
 	-tablero(celda(X,Y+1,_),ficha(Color,Tipo));
@@ -249,19 +257,25 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarDown(X,Y).
 
 //Comprueba las consecuencias de un movimiento hacia la derecha de la ficha en X+1,Y
-+!comprobarRight(X,Y) : tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight)) & tablero(celda(X,Y,_),ficha(Color,Tipo))<-
++!comprobarRight(X,Y) : tablero(celda(X+1,Y,OwnerRight),ficha(ColorRight,TipoRight)) & tablero(celda(X,Y,Owner),ficha(Color,Tipo))<-
 
-	-tablero(celda(X+1,Y,_),ficha(ColorRight,TipoRight));
-	-tablero(celda(X,Y,_),ficha(Color,Tipo));
-	+tablero(celda(X+1,Y,0),ficha(Color,Tipo));
-	+tablero(celda(X,Y,0),ficha(ColorRight,TipoRight));
+	-tablero(celda(X+1,Y,OwnerRight),ficha(ColorRight,TipoRight));
+	-tablero(celda(X,Y,Owner),ficha(Color,Tipo));
+	+tablero(celda(X+1,Y,OwnerRight),ficha(Color,Tipo));
+	+tablero(celda(X,Y,Owner),ficha(ColorRight,TipoRight));
 
 	?comprobarPatrones(ColorRight,X,Y,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	?comprobarPatrones(Color,X+1,Y,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
 	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);
+	
+	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
 	!handlePattern(ColorRight,StartsAtX1,StartsAtY1,Direction1,Pattern1);
+	!parseOwnerValue(Owner);
+	?celdasTotalJugada(Celdas);
+	.print("Celdas conseguidas para la derecha: ", Celdas, " en (",X,",",Y,")");
+	
 	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
 	-tablero(celda(X+1,Y,_),ficha(Color,Tipo));
@@ -271,14 +285,28 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comprobarRight(X,Y).
 
+//Si el dueño de la jugada no es nadie, las celdas de la jugada son 0
++!parseOwnerValue(Owner) : nivel(3) & celdasTotalJugada(Celdas) & playerOwner(PlayerOwner) & Owner=0 <-
+	-+celdasTotalJugada(0);
+.
+
+//Si el player no es el que se va a llevar beneficio del tablero conquistado, entonces la jugada es perjudicial, y debe contar como negativa
++!parseOwnerValue(Owner) : nivel(3) & celdasTotalJugada(Celdas) & playerOwner(PlayerOwner) & not PlayerOwner=Owner <-
+	-+celdasTotalJugada(-1);
+.
+
+//Si el jugador es el que se lleva el tablero o no estamos en el nivel 3, el cálculo queda como estaba
++!parseOwnerValue(Owner).
+
 +!comprobarPuntosDown(X,Y) : nivel(3) & puntosTotalJugada(PuntosDown) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
-	.print(Celdas);
+	.print("Celdas conseguidas: ",Celdas);
 	-+celdasAct(Celdas);
 	-+puntos(PuntosDown);
 	-+direction("down").
 	
 +!comprobarPuntosDown(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
 		& puntosTotalJugada(PuntosDown) &  puntos(Puntos) & PuntosDown > Puntos <-
+		.print("Entro");
 	-+puntos(PuntosDown);
 	-+direction("down").
 	
@@ -290,7 +318,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarPuntosDown(X,Y).
 
 +!comprobarPuntosRight(X,Y) : nivel(3) & puntosTotalJugada(PuntosRight) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
-	.print(Celdas);	
+	.print("Celdas conseguidas: ",Celdas);
 	-+celdasAct(Celdas);
 	-+puntos(PuntosRight);
 	-+direction("right").
@@ -346,17 +374,21 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Gestion de patrones. Comprueba las explosiones de cada una de las fichas involucradas.
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineH" <-
+
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY+2).
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "3inLineW" <-
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX+2,StartsAtY).
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineH" & puntosTotalJugada(P) <-
 	-+puntosTotalJugada(P+2);
+	
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY+2);
@@ -364,6 +396,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "4inLineW" & puntosTotalJugada(P) <-
 	-+puntosTotalJugada(P+2);
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX+2,StartsAtY);
@@ -371,6 +404,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineH" & puntosTotalJugada(P)<-
 	-+puntosTotalJugada(P+8);
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY+2);
@@ -379,6 +413,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "5inLineW" & puntosTotalJugada(P) <-
 	-+puntosTotalJugada(P+8);
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX+2,StartsAtY);
@@ -387,6 +422,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!handlePattern(Color,StartsAtX,StartsAtY,Direction,Pattern) : Pattern = "Square" & puntosTotalJugada(P) <-
 	-+puntosTotalJugada(P+4);
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
@@ -400,6 +436,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Manejo de las particularidades del patr?n en T
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "standing" <-
+
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX-1,StartsAtY);
@@ -407,6 +444,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!explosion(StartsAtX,StartsAtY+2).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "upside-down" <-
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX+1,StartsAtY);
 	!explosion(StartsAtX-1,StartsAtY);
@@ -414,6 +452,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!explosion(StartsAtX,StartsAtY-2).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-right" <-
+
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY-1);
@@ -421,29 +460,32 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!explosion(StartsAtX+2,StartsAtY).
 
 +!handleT(Color,StartsAtX,StartsAtY,Direction,Pattern) : Direction = "pointing-left" <-
+	
 	!explosion(StartsAtX,StartsAtY);
 	!explosion(StartsAtX,StartsAtY+1);
 	!explosion(StartsAtX,StartsAtY-1);
 	!explosion(StartsAtX-1,StartsAtY);
 	!explosion(StartsAtX-2,StartsAtY).
+	
 
 //Calculo del numero de puntos por explosion y consecuencias
-+!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & puntosTotalJugada(P) & not explotada(X,Y)<-
++!explosion(X,Y) : tablero(celda(X,Y,SteakOwner),ficha(C,T)) & direction(D) & not explotada(X,Y) <-
 	+explotada(X,Y);
 	!specialExplosion(X,Y,C,T,D).
 
-+!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) 
-		& playerOwner(Own) & not Owner = Own & celdasTotalJugada(C) <-
++!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(C,T)) 
+		& actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner=ActualOwner) & celdasTotalJugada(Celdas) <-
+	.print("*************Incrementamos en uno los puntos de celda");
     -+puntosTotalJugada(P+1);
-	-+celdasTotalJugada(C+1).	
-	
+	-+celdasTotalJugada(Celdas+1).	
+	                                         
 +!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P)<-
     -+puntosTotalJugada(P+1).
 	
-+!specialExplosion(X,Y,C,T,D) : T = ip  & (D="up" | D="down") & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) 
-		& playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-     //Explosion en linea vertical
++!specialExplosion(X,Y,C,T,D) : T = ip  & (D="up" | D="down") & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(C,T)) 
+		& actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner = ActualOwner) & celdasTotalJugada(Celdas)<-     //Explosion en linea vertical
 	+explotada(X,Y);
-	-+celdasTotalJugada(C+1);
+	-+celdasTotalJugada(Celdas+1);
 	-+puntosTotalJugada(P+2);
 	.findall(tablero(celda(X,NY,_),ficha(NC,_)),tablero(celda(X,NY,_),ficha(NC,_)),Lista);
 	for(.member(tablero(celda(X,NY,_),ficha(NC,_)),Lista)){
@@ -458,10 +500,10 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		!explosion(X,NY);
 	}.
 	
-+!specialExplosion(X,Y,C,T,D) : T = ip  & (D="left" | D="right") & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(Color,Tipo)) 
-		& playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-     //Explosion en linea horizontal
++!specialExplosion(X,Y,C,T,D) : T = ip  & (D="left" | D="right") & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(C,T)) 
+		& actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner = ActualOwner) & celdasTotalJugada(Celdas)<-     //Explosion en linea horizontal
 	+explotada(X,Y);
-	-+celdasTotalJugada(C+1);
+	-+celdasTotalJugada(Celdas+1);
 	-+puntosTotalJugada(P+2);
 	.findall(tablero(celda(NX,Y,_),ficha(NC,_)),tablero(celda(NX,Y,_),ficha(NC,_)),Lista);
 	for(.member(tablero(celda(NX,Y,_),ficha(NC,_)),Lista)){
@@ -477,8 +519,8 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	}.
 	
 +!specialExplosion(X,Y,C,T,D) : T = gs & tablero(celda(NX,NY,_),ficha(C,_)) & not X=NX & not Y=NY & puntosTotalJugada(P) & nivel(3)
-		& tablero(celda(X,Y,Owner),ficha(Color,Tipo)) & playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-	 //Explosion de una ficha del mismo color (distinta a si misma)
-	-+celdasTotalJugada(C+1);
+		& tablero(celda(X,Y,Owner),ficha(C,T)) & actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner = ActualOwner) & celdasTotalJugada(Celdas)<-	 //Explosion de una ficha del mismo color (distinta a si misma)
+	-+celdasTotalJugada(Celdas+1);
 	-+puntosTotalJugada(P+4);
 	!explosion(NX,NY).
 
@@ -487,8 +529,8 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	!explosion(NX,NY).
 
 +!specialExplosion(X,Y,C,T,D) : T = co & puntosTotalJugada(P) & nivel(3)
-		& tablero(celda(X,Y,Owner),ficha(Color,Tipo)) & playerOwner(Own) & not Owner = Own & celdasTotalJugada(C)<-  			//Explosion en cuadrado 3x3
-	-+celdasTotalJugada(C+1);
+		& tablero(celda(X,Y,Owner),ficha(C,T)) & actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner = ActualOwner) & celdasTotalJugada(Celdas)<-  			//Explosion en cuadrado 3x3
+	-+celdasTotalJugada(Celdas+1);
 	-+puntosTotalJugada(P+6);
 	for ( .range(I,-1,1) ) {
 		for ( .range(J,-1,1) ) {
@@ -510,9 +552,9 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!coExplosion(X,Y).
 
 +!specialExplosion(X,Y,C,T,D) : T = ct & puntosTotalJugada(P) & nivel(3)
-		& tablero(celda(X,Y,Owner),ficha(Color,Tipo)) & playerOwner(Own) & not Owner = Own & celdasTotalJugada(C) <-     //Explosion de todas las fichas de ese color
+		& tablero(celda(X,Y,Owner),ficha(C,T)) & actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner = ActualOwner) & celdasTotalJugada(Celdas) <-     //Explosion de todas las fichas de ese color
 	+explotada(X,Y);
-	-+celdasTotalJugada(C+1);
+	-+celdasTotalJugada(Celdas+1);
 	-+puntosTotalJugada(P+8);
 	.findall(tablero(celda(NX,NY,_),ficha(C,_)),tablero(celda(NX,NY,_),ficha(C,_)),Lista);
 	for(.member(tablero(celda(NX,NY,_),ficha(C,_)),Lista)){

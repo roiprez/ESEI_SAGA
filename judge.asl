@@ -366,6 +366,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	turnoActual(P) & movimientoValido(pos(X,Y),Dir) & turnoActivado(1) <-
+			-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
 			-+turnoActivado(0);
 			-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
 			.print("Jugada valida!")
@@ -379,18 +380,21 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 //Movimiento Incorrecto
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	turnoActual(P) & not movimientoValido(pos(X,Y),Dir) & turnoActivado(1)<-
+			-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
 			-+turnoActivado(0);
 			+movimientoInvalido(pos(X,Y),Dir,P).
 
 //Movimiento realizado por un jugador que tiene el turno pero el juez aun no le ha ordenado mover
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	turnoActual(P) & turnoActivado(0) <-
+			-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
 			.print("Agente ",P,", espera mi orden para realizar el siguiente movimiento. No intentes mover mas de una vez.").
 
 
 //Movimiento realizado por un jugador fuera de su turno
 +moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)] :
 	not turnoActual(P) & fueraTurno(P,N) <-
+		-moverDesdeEnDireccion(pos(X,Y),Dir)[source(P)];
 		.print(P," Has intentado realizar un movimiento fuera de tu turno. ", N+1," aviso");
 		.send(P,tell,invalido(fueraTurno,N+1));
 		.send(P,untell,invalido(fueraTurno,N+1));
@@ -442,7 +446,8 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 
 
 //Recepcion del aviso de que un jugador pasa turno por haber realizado un movimiento fuera del tablero mas de 3 veces
-+pasoTurno[source(P)] : turnoActual(P) <-
++pasoTurno[source(P)] : turnoActual(P) <-	
+		-pasoTurno[source(P)];
 		-+fueraTablero(0);
 		.print(P," ha pasado turno");
 		+cambioTurno(P);
