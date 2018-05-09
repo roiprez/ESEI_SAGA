@@ -183,8 +183,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Envia al juez la jugada que quiere realizar
 +!comunicarJugada : cordX(X) & cordY(Y) & dirMax(Dir)<-
 	.print("Quiero mover desde posicion (",X,",",Y,") en direccion ",Dir);
-	.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),Dir));
-	.send(judge,untell,moverDesdeEnDireccion(pos(X,Y),Dir)).
+	.send(judge,tell,moverDesdeEnDireccion(pos(X,Y),Dir)).
 
 +!comunicarJugada.
 
@@ -244,8 +243,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
 	!handlePattern(ColorDown,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	!parseOwnerValue(Owner);
-	?celdasTotalJugada(Celdas);
-	.print("Celdas conseguidas para abajo: ", Celdas, " en (",X,",",Y,")");
 	
 	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
@@ -273,8 +270,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
 	!handlePattern(ColorRight,StartsAtX1,StartsAtY1,Direction1,Pattern1);
 	!parseOwnerValue(Owner);
-	?celdasTotalJugada(Celdas);
-	.print("Celdas conseguidas para la derecha: ", Celdas, " en (",X,",",Y,")");
 	
 	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 
@@ -299,14 +294,12 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!parseOwnerValue(Owner).
 
 +!comprobarPuntosDown(X,Y) : nivel(3) & puntosTotalJugada(PuntosDown) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
-	.print("Celdas conseguidas: ",Celdas);
 	-+celdasAct(Celdas);
 	-+puntos(PuntosDown);
 	-+direction("down").
 	
 +!comprobarPuntosDown(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
 		& puntosTotalJugada(PuntosDown) &  puntos(Puntos) & PuntosDown > Puntos <-
-		.print("Entro");
 	-+puntos(PuntosDown);
 	-+direction("down").
 	
@@ -318,7 +311,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!comprobarPuntosDown(X,Y).
 
 +!comprobarPuntosRight(X,Y) : nivel(3) & puntosTotalJugada(PuntosRight) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
-	.print("Celdas conseguidas: ",Celdas);
 	-+celdasAct(Celdas);
 	-+puntos(PuntosRight);
 	-+direction("right").
@@ -337,7 +329,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Si el n?mero de celdas que se consiguen es superior al anterior se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & celdasMax(Cmax) & celdasAct(Cact) & Cact > Cmax <-
-	.print("Cmax nuevo: ", Cact);
+	.print("Cmax nuevo: ", Cact," en (",X,",",Y,")");
 	.print("Puntos: ", Puntos);
 	-+cordX(X);
 	-+cordY(Y);
@@ -348,7 +340,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Si el n?mero de celdas es el mismo, pero el n?mero de puntos es mayor se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax & 
 		celdasMax(Cmax) & celdasAct(Cact) & Cact = Cmax <-
-	.print("Cmax invariable: ", Cact);
+	.print("Cmax invariable: ", Cact," en (",X,",",Y,")");
 	.print("Puntos: ", Puntos);
 	-+cordX(X);
 	-+cordY(Y);
@@ -475,7 +467,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!specialExplosion(X,Y,C,T,D) : T = in & puntosTotalJugada(P) & nivel(3) & tablero(celda(X,Y,Owner),ficha(C,T)) 
 		& actualPatternOwner(ActualOwner) & not (ActualOwner=0 | Owner=ActualOwner) & celdasTotalJugada(Celdas) <-
-	.print("*************Incrementamos en uno los puntos de celda");
     -+puntosTotalJugada(P+1);
 	-+celdasTotalJugada(Celdas+1).	
 	                                         
@@ -606,8 +597,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +invalido(fueraTablero,N)[source(judge)] : N>3 <-
 	.print("Me he equivocado demasiadas veces intentando mover fichas hacia fuera del tablero. Paso Turno!");
-	.send(judge,tell,pasoTurno);
-	.send(judge,untell,pasoTurno).
+	.send(judge,tell,pasoTurno).
 
 //Movimiento realizado fuera de turno
 +invalido(fueraTurno,N)[source(judge)] <- .print("Soy un tramposo!!! Intente realizar una jugada fuera de mi turno y el Juez me ha pillado").

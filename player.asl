@@ -177,6 +177,9 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Realizacion de la jugada
 +!realizarJugada  <-
+.findall(tablero(X,Y),tablero(X,Y),Lista);
+.length(Lista,N);
+.print("nº tablero: ", N);
 	!pensarJugada;
 	!comunicarJugada.
 
@@ -240,16 +243,26 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);         
 	
-	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
+	-+actualPatternOwner(OwnerDown);  //Determina el owner que tenía la ficha que sube
 	!handlePattern(ColorDown,StartsAtX1,StartsAtY1,Direction1,Pattern1);
+	!parseOwnerValue(OwnerDown);
+	
+	?celdasTotalJugada(Jugada1);
+	
+	-+celdasTotalJugada(0);        
+	
+	-+actualPatternOwner(Owner);  //Determina el owner que tenía la ficha que baja
+	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 	!parseOwnerValue(Owner);
 	
-	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
+	?celdasTotalJugada(Jugada2);
+	
+	-+celdasTotalJugada(Jugada1 + Jugada2);
 
-	-tablero(celda(X,Y+1,_),ficha(Color,Tipo));
-	-tablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
-	+tablero(celda(X,Y+1,0),ficha(ColorDown,TipoDown));
-	+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+	-tablero(celda(X,Y+1,OwnerDown),ficha(Color,Tipo));
+	-tablero(celda(X,Y,Owner),ficha(ColorDown,TipoDown));
+	+tablero(celda(X,Y+1,OwnerDown),ficha(ColorDown,TipoDown));
+	+tablero(celda(X,Y,Owner),ficha(Color,Tipo)).
 
 +!comprobarDown(X,Y).
 
@@ -267,16 +280,26 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);
 	
-	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
+	-+actualPatternOwner(OwnerRight);  //Determina el owner que tenía la ficha que va a la izquierda
 	!handlePattern(ColorRight,StartsAtX1,StartsAtY1,Direction1,Pattern1);
+	!parseOwnerValue(OwnerRight);
+		
+	?celdasTotalJugada(Jugada1);
+	
+	-+celdasTotalJugada(0);        
+	
+	-+actualPatternOwner(Owner);  //Determina el owner que tenía la ficha que va a la derecha
+	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 	!parseOwnerValue(Owner);
 	
-	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
+	?celdasTotalJugada(Jugada2);
+	
+	-+celdasTotalJugada(Jugada1 + Jugada2);
 
-	-tablero(celda(X+1,Y,_),ficha(Color,Tipo));
-	-tablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
-	+tablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
-	+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+	-tablero(celda(X+1,Y,OwnerRight),ficha(Color,Tipo));
+	-tablero(celda(X,Y,Owner),ficha(ColorRight,TipoRight));
+	+tablero(celda(X+1,Y,OwnerRight),ficha(ColorRight,TipoRight));
+	+tablero(celda(X,Y,Owner),ficha(Color,Tipo)).
 
 +!comprobarRight(X,Y).
 
@@ -287,7 +310,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Si el player no es el que se va a llevar beneficio del tablero conquistado, entonces la jugada es perjudicial, y debe contar como negativa
 +!parseOwnerValue(Owner) : nivel(3) & celdasTotalJugada(Celdas) & playerOwner(PlayerOwner) & not PlayerOwner=Owner <-
-	-+celdasTotalJugada(-1);
+	-+celdasTotalJugada(-Celdas);
 .
 
 //Si el jugador es el que se lleva el tablero o no estamos en el nivel 3, el cálculo queda como estaba
