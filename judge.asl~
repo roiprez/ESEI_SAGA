@@ -680,7 +680,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 
 //Analisis del movimiento solicitado por un jugador
 //Movimiento correcto
-+intercambiarFichas(X1,Y1,Dir,P) : nextPosition(X1,Y1,Dir,X2,Y2) & plNumb(P,PlNumb) <-
++intercambiarFichas(X1,Y1,Dir,P) : nextPosition(X1,Y1,Dir,X2,Y2) & plNumb(P,PlNumb) & tablero(celda(X1,Y1,Own1),ficha(C1,TipoFicha1)) & tablero(celda(X2,Y2,Own2),ficha(C2,TipoFicha2))<-
 								-+direction(Dir);
 								-tablero(celda(X1,Y1,Own1),ficha(C1,TipoFicha1));
 								-tablero(celda(X2,Y2,Own2),ficha(C2,TipoFicha2));
@@ -741,7 +741,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 +!fall(X,Y) : emptyUnder(X,Y)  <-
 	!fallAndRoll(X,Y). //Solo rodaran las fichas que primeramente han caido
 
-+!fallAndRoll(X,Y) : emptyUnder(X,Y) & tablero(celda(X,Y,Owner1),ficha(Color,Tipo))<-
++!fallAndRoll(X,Y) : emptyUnder(X,Y) & tablero(celda(X,Y,Owner1),ficha(Color,Tipo)) & tablero(celda(X,Y+1,Owner2),e) <-
  	-tablero(celda(X,Y,Owner1),ficha(Color,Tipo));
 	-tablero(celda(X,Y+1,Owner2),e);
     +tablero(celda(X,Y,Owner1),e);
@@ -750,7 +750,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 	put(Color,X,Y+1,Tipo);
 	!fallAndRoll(X,Y+1).
 
-+!fallAndRoll(X,Y) : emptyLeft(X,Y) & tablero(celda(X,Y,Owner1),ficha(Color,Tipo))<- //Se ha elegido que las fichas rueden hacia la izquierda para funcionar correctamente con el orden de exploracion del tablero establecido.
++!fallAndRoll(X,Y) : emptyLeft(X,Y) & tablero(celda(X,Y,Owner1),ficha(Color,Tipo)) & tablero(celda(X-1,Y,Owner2),e)<- //Se ha elegido que las fichas rueden hacia la izquierda para funcionar correctamente con el orden de exploracion del tablero establecido.
  	-tablero(celda(X,Y,Owner1),ficha(Color,Tipo));
 	-tablero(celda(X-1,Y,Owner2),e);
     +tablero(celda(X,Y,Owner1),e);
@@ -1003,7 +1003,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 
 
 //Gestion de explosiones segun el tipo de ficha
-+!explosion(X,Y) : tablero(celda(X,Y,_),ficha(C,T)) & direction(D) & turnoActual(A) & level(L) & points(L,A,P)<-
++!explosion(X,Y) : tablero(celda(X,Y,Own),ficha(C,T)) & direction(D) & turnoActual(A) & level(L) & points(L,A,P)<-
 				-tablero(celda(X,Y,Own),_); //Primero se elimina la ficha seleccionada, luego las otras fichas afectadas en caso de ser necesario
 				+tablero(celda(X,Y,Own),e);
 				!changeOwner(X,Y);
@@ -1043,7 +1043,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 			-points(L,A,P);
 			+points(L,A,P+4);
 			!explosion(NX,NY);
-			-tablero(celda(NX,NY,_),ficha(C,_));
+			-tablero(celda(NX,NY,Own),ficha(C,_));
 			+tablero(celda(NX,NY,Own),e);
 			delete(C,NX,NY).
 

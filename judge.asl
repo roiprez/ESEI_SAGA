@@ -4,7 +4,7 @@
 
 /* ----- Initial beliefs and rules ------ */
 
-jugadasRestantes(15).
+jugadasRestantes(30).
 
 jugadasPlayer(player1,0).
 jugadasPlayer(player2,0).
@@ -32,9 +32,9 @@ obstacles(3,5). // --- TODO --- Volver a poner obstaculos al nivel 3
 
 territorioInicial(5). //Territorio inicial asignado a cada jugador al comienzo del nivel 3 // --- TODO ---
 
-limitPoints(1,0). //Puntuacion a obtener para ganar un nivel
-limitPoints(2,0).
-limitPoints(3,2000).
+limitPoints(1,100). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,200).
+limitPoints(3,200).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
 points(1,player2,0).
@@ -524,7 +524,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					.wait(1000);
 					-+level(2);
 					-+turnoActual(player1);
-					-+jugadasRestantes(20); // --- TODO --- Revisar
+					-+jugadasRestantes(40); // --- TODO --- Revisar
 					-jugadasPlayer(player1,_);
 					+jugadasPlayer(player1,0);
 					-jugadasPlayer(player2,_);
@@ -548,7 +548,7 @@ ownerName(Owner,OwnerName) :- Owner=1 & OwnerName=player1 | Owner=2 & OwnerName=
 					.wait(1000);
 					-+level(3);
 					-+turnoActual(player1);
-					-+jugadasRestantes(20); // --- TODO --- Revisar
+					-+jugadasRestantes(40); // --- TODO --- Revisar
 					-jugadasPlayer(player1,_);
 					+jugadasPlayer(player1,0);
 					-jugadasPlayer(player2,_);

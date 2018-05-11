@@ -26,6 +26,17 @@ pensarJugadaAleatoria(X1,Y1,Dir):-
 	(tablero(celda(X1+1,Y1,_),ficha(Color2,_)) &
 	(Color1 \== Color2 & Dir = "right")) | Dir = "up")
 	).
+	
+comprobarDireccionUpDown(JugadaUp,JugadaDown,JugadaMax,Dir):-
+	(JugadaUp>JugadaDown & JugadaMax=JugadaUp & Dir="up") |
+	(JugadaUp<JugadaDown & JugadaMax=JugadaDown & Dir="down") |
+	JugadaMax=JugadaDown & Dir="down".
+	
+comprobarDireccionLeftRight(JugadaLeft,JugadaRight,JugadaMax,Dir):-
+	(JugadaLeft>JugadaRight & JugadaMax=JugadaLeft & Dir="left") |
+	(JugadaLeft<JugadaRight & JugadaMax=JugadaRight & Dir="right") |
+	JugadaMax=JugadaRight & Dir="right".
+	
 
 //Comprueba todos los patrones, si el de mayor prioridad se cumple es el que devuelve
 comprobarPatrones(Color,X,Y,StartsAtX,StartAtY,Direction,Pattern) :-
@@ -177,6 +188,9 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Realizacion de la jugada
 +!realizarJugada  <-
+.findall(tablero(X,Y),tablero(X,Y),Lista);
+.length(Lista,N);
+.print("nº tablero: ", N);
 	!pensarJugada;
 	!comunicarJugada.
 
@@ -214,14 +228,14 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	//Caso "down"
 	!abolishExplotada;
 	!comprobarDown(X,Y);
-	!comprobarPuntosDown(X,Y);
+	!comprobarPuntosJugada(X,Y);
 
 	//Caso "right"
 	!abolishExplotada;
 	!comprobarRight(X,Y);
-	!comprobarPuntosRight(X,Y).
+	!comprobarPuntosJugada(X,Y).
 
-+!comprobarDireccion(X,Y).  
++!comprobarDireccion(X,Y).                 
 
 +!abolishExplotada <- 
 	.abolish(explotada(X,Y)).
@@ -240,16 +254,30 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);         
 	
-	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
+	-+actualPatternOwner(OwnerDown);  //Determina el owner que tenía la ficha que sube
 	!handlePattern(ColorDown,StartsAtX1,StartsAtY1,Direction1,Pattern1);
+	!parseOwnerValue(OwnerDown);
+	
+	?celdasTotalJugada(JugadaUp);
+	
+	-+celdasTotalJugada(0);        
+	
+	-+actualPatternOwner(Owner);  //Determina el owner que tenía la ficha que baja
+	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 	!parseOwnerValue(Owner);
 	
-	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
+	?celdasTotalJugada(JugadaDown);
+	
+	?comprobarDireccionUpDown(JugadaUp,JugadaDown,JugadaMax,Dir);
+	
+	-+directionCeldas(Dir);
+	
+	-+celdasTotalJugada(JugadaMax); 
 
-	-tablero(celda(X,Y+1,_),ficha(Color,Tipo));
-	-tablero(celda(X,Y,_),ficha(ColorDown,TipoDown));
-	+tablero(celda(X,Y+1,0),ficha(ColorDown,TipoDown));
-	+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+	-tablero(celda(X,Y+1,OwnerDown),ficha(Color,Tipo));
+	-tablero(celda(X,Y,Owner),ficha(ColorDown,TipoDown));
+	+tablero(celda(X,Y+1,OwnerDown),ficha(ColorDown,TipoDown));
+	+tablero(celda(X,Y,Owner),ficha(Color,Tipo)).
 
 +!comprobarDown(X,Y).
 
@@ -267,18 +295,33 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	-+celdasTotalJugada(0);
 	-+puntosTotalJugada(0);
 	
-	-+actualPatternOwner(Owner);  //Determina el owner actual del patrón
+	-+actualPatternOwner(OwnerRight);  //Determina el owner que tenía la ficha que va a la izquierda
 	!handlePattern(ColorRight,StartsAtX1,StartsAtY1,Direction1,Pattern1);
+	!parseOwnerValue(OwnerRight);
+		
+	?celdasTotalJugada(JugadaLeft);
+	
+	-+celdasTotalJugada(0);        
+	
+	-+actualPatternOwner(Owner);  //Determina el owner que tenía la ficha que va a la derecha
+	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
 	!parseOwnerValue(Owner);
 	
-	!handlePattern(Color,StartsAtX2,StartsAtY2,Direction2,Pattern2);
+	?celdasTotalJugada(JugadaRight);
+	
+	?comprobarDireccionLeftRight(JugadaLeft,JugadaRight,JugadaMax,Dir);
+	
+	-+directionCeldas(Dir);
+	
+	-+celdasTotalJugada(JugadaMax);                       
 
-	-tablero(celda(X+1,Y,_),ficha(Color,Tipo));
-	-tablero(celda(X,Y,_),ficha(ColorRight,TipoRight));
-	+tablero(celda(X+1,Y,0),ficha(ColorRight,TipoRight));
-	+tablero(celda(X,Y,0),ficha(Color,Tipo)).
+	-tablero(celda(X+1,Y,OwnerRight),ficha(Color,Tipo));
+	-tablero(celda(X,Y,Owner),ficha(ColorRight,TipoRight));
+	+tablero(celda(X+1,Y,OwnerRight),ficha(ColorRight,TipoRight));
+	+tablero(celda(X,Y,Owner),ficha(Color,Tipo)).
 
 +!comprobarRight(X,Y).
+
 
 //Si el dueño de la jugada no es nadie, las celdas de la jugada son 0
 +!parseOwnerValue(Owner) : nivel(3) & celdasTotalJugada(Celdas) & playerOwner(PlayerOwner) & Owner=0 <-
@@ -287,52 +330,34 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Si el player no es el que se va a llevar beneficio del tablero conquistado, entonces la jugada es perjudicial, y debe contar como negativa
 +!parseOwnerValue(Owner) : nivel(3) & celdasTotalJugada(Celdas) & playerOwner(PlayerOwner) & not PlayerOwner=Owner <-
-	-+celdasTotalJugada(-1);
+	-+celdasTotalJugada(-Celdas);
 .
 
 //Si el jugador es el que se lleva el tablero o no estamos en el nivel 3, el cálculo queda como estaba
 +!parseOwnerValue(Owner).
 
-+!comprobarPuntosDown(X,Y) : nivel(3) & puntosTotalJugada(PuntosDown) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
++!comprobarPuntosJugada(X,Y) : nivel(3) & puntosTotalJugada(PuntosJugada) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact & directionCeldas(Dir)<-
 	-+celdasAct(Celdas);
-	-+puntos(PuntosDown);
-	-+direction("down").
+	-+puntos(PuntosJugada);                        
+	-+direction(Dir).
 	
-+!comprobarPuntosDown(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
-		& puntosTotalJugada(PuntosDown) &  puntos(Puntos) & PuntosDown > Puntos <-
-	-+puntos(PuntosDown);
-	-+direction("down").
++!comprobarPuntosJugada(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
+		& puntosTotalJugada(PuntosJugada) &  puntos(Puntos) & PuntosJugada > Puntos & directionCeldas(Dir) <-
+	-+puntos(PuntosJugada);
+	-+direction(Dir).
 	
 //Comprueba si la jugada hacia abajo ha superado la jugada anterior de m?s puntos
-+!comprobarPuntosDown(X,Y) : not nivel(3) & puntosTotalJugada(PuntosDown) & puntos(Puntos) & PuntosDown > Puntos <-
-	-+puntos(PuntosDown);
-	-+direction("down").
++!comprobarPuntosJugada(X,Y) : not nivel(3) & puntosTotalJugada(PuntosJugada) & puntos(Puntos) & PuntosJugada > Puntos & directionCeldas(Dir) <-
+	-+puntos(PuntosJugada);
+	-+direction(Dir).
 
-+!comprobarPuntosDown(X,Y).
-
-+!comprobarPuntosRight(X,Y) : nivel(3) & puntosTotalJugada(PuntosRight) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas > Cact <-
-	-+celdasAct(Celdas);
-	-+puntos(PuntosRight);
-	-+direction("right").
-	
-+!comprobarPuntosRight(X,Y) : nivel(3) & celdasTotalJugada(Celdas) & celdasAct(Cact) & Celdas = Cact 
-		& puntosTotalJugada(PuntosRight) &  puntos(Puntos) & PuntosRight > Puntos <-
-	-+puntos(PuntosRight);
-	-+direction("right").
-
-//Comprueba si la jugada hacia la derecha ha superado la jugada anterior de m?s puntos
-+!comprobarPuntosRight(X,Y) : not nivel(3) & puntosTotalJugada(PuntosRight) & puntos(Puntos) & PuntosRight > Puntos <-
-	-+puntos(PuntosRight);
-	-+direction("right").
-
-+!comprobarPuntosRight(X,Y).
++!comprobarPuntosJugada(X,Y).
 
 //Si el n?mero de celdas que se consiguen es superior al anterior se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & celdasMax(Cmax) & celdasAct(Cact) & Cact > Cmax <-
 	.print("Cmax nuevo: ", Cact," en (",X,",",Y,")");
 	.print("Puntos: ", Puntos);
-	-+cordX(X);
-	-+cordY(Y);
+	!asignarCoordenadas(X,Y);
 	-+celdasMax(Cact);
 	-+puntosMax(Puntos);
 	-+dirMax(Dir).
@@ -342,8 +367,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 		celdasMax(Cmax) & celdasAct(Cact) & Cact = Cmax <-
 	.print("Cmax invariable: ", Cact," en (",X,",",Y,")");
 	.print("Puntos: ", Puntos);
-	-+cordX(X);
-	-+cordY(Y);
+	!asignarCoordenadas(X,Y);
 	-+puntosMax(Puntos);
 	-+dirMax(Dir).
 
@@ -356,12 +380,34 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comprobarPuntos(X,Y).
 
++!asignarCoordenadas(X,Y) : direction(Dir) & Dir="up"<-
+	-+cordX(X);
+	-+cordY(Y-1);
+.
+
++!asignarCoordenadas(X,Y) : direction(Dir) & (Dir="down" | Dir="right")<-
+	-+cordX(X);
+	-+cordY(Y);
+.
+
++!asignarCoordenadas(X,Y) : direction(Dir) & Dir="left"<-
+	-+cordX(X-1);
+	-+cordY(Y);
+.
+
+
 //Comprueba que no se pudieron hacer puntos en ninguna jugada, y guarda una aleatoria.
-+!comprobarCeroPuntos: puntosMax(N) & N = 0 & pensarJugadaAleatoria(X,Y,Dir) <-
+//En caso de que sea una jugada aleatoria se escogerá una jugada que no tenga dueño o cuyo dueño sea el jugador, para no arriesgarse a hacer celdas para el contrario
++!comprobarCeroPuntos: nivel(3) & puntosMax(N) & N = 0 & pensarJugadaAleatoria(X,Y,Dir) & tablero(celda(X,Y,Own),ficha(Color,Tipo)) & playerOwner(PlayerOwner) & (Own = 0 | Own=PlayerOwner)<-
 	-+cordX(X);
 	-+cordY(Y);
 	-+dirMax(Dir).
 
++!comprobarCeroPuntos: puntosMax(N) & N = 0 & pensarJugadaAleatoria(X,Y,Dir) <-
+	-+cordX(X);
+	-+cordY(Y);
+	-+dirMax(Dir).
+	
 +!comprobarCeroPuntos.
 
 //Gestion de patrones. Comprueba las explosiones de cada una de las fichas involucradas.
