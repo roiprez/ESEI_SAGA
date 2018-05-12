@@ -6,8 +6,6 @@
 
 /* Initial beliefs and rules */
 
-actualPatternOwner(0).  //Determina el owner actual del patrón.
-
 //Da una jugada aleatoria desde las coordenadas X1,Y1 y en direcci?n Dir
 pensarJugadaAleatoria(X1,Y1,Dir):-
 	size(N)&
@@ -27,11 +25,13 @@ pensarJugadaAleatoria(X1,Y1,Dir):-
 	(Color1 \== Color2 & Dir = "right")) | Dir = "up")
 	).
 	
+//Comprueba si en el intercambio vertical hacen más celdas el movimiento hacia arriba o hacia abajo, para comunicárselo al juez, si hay empate, hacia abajo
 comprobarDireccionUpDown(JugadaUp,JugadaDown,JugadaMax,Dir):-
 	(JugadaUp>JugadaDown & JugadaMax=JugadaUp & Dir="up") |
 	(JugadaUp<JugadaDown & JugadaMax=JugadaDown & Dir="down") |
 	JugadaMax=JugadaDown & Dir="down".
-	
+
+//Comprueba si en el intercambio horizontal hacen más celdas el movimiento hacia la izquierda o hacia la derecha, para comunicárselo al juez, si hay empate, hacia la derecha
 comprobarDireccionLeftRight(JugadaLeft,JugadaRight,JugadaMax,Dir):-
 	(JugadaLeft>JugadaRight & JugadaMax=JugadaLeft & Dir="left") |
 	(JugadaLeft<JugadaRight & JugadaMax=JugadaRight & Dir="right") |
@@ -188,9 +188,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Realizacion de la jugada
 +!realizarJugada  <-
-.findall(tablero(X,Y),tablero(X,Y),Lista);
-.length(Lista,N);
-.print("nº tablero: ", N);
 	!pensarJugada;
 	!comunicarJugada.
 
@@ -203,22 +200,24 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Comprueba el estado del tablero para buscar la jugada optima, si no hay una jugada que de puntuaci?n, hace una aleatoria.
 //celdasMax s?lo se utilizar? para el nivel(3)
-+!pensarJugada  <-
++!pensarJugada : size(N)  <-
 	-+celdasMax(0);
 	-+celdasAct(0);
 	-+puntosMax(0);
 	-+puntos(0);
 	-+direction("none");
 	.findall(celda(X,Y,Own),tablero(celda(X,Y,Own),_),Lista);
-	!comprobarTablero(Lista,0);
+	for ( .range(I,0,(N-1)) ) {
+		for ( .range(J,0,(N-1)) ) {
+			!comprobarTablero((N-1-I),(N-1-J));
+		}
+	}
 	!comprobarCeroPuntos.
 
 //Comprueba de forma recursiva cada posici?n del tablero y las posibilidades de jugada
-+!comprobarTablero(Lista,N) : .length(Lista,Length) & N<Length <-
-	.nth(N,Lista,celda(X,Y,Own));
++!comprobarTablero(X,Y) <-
 	!comprobarDireccion(X,Y);
-	!comprobarPuntos(X,Y);
-	!comprobarTablero(Lista,N+1).
+	!comprobarPuntos(X,Y).
 
 +!comprobarTablero(Lista,N).
 
@@ -268,6 +267,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	
 	?celdasTotalJugada(JugadaDown);
 	
+	//Devuelve la dirección que ha hecho más puntos, y los puntos que ah hecho
 	?comprobarDireccionUpDown(JugadaUp,JugadaDown,JugadaMax,Dir);
 	
 	-+directionCeldas(Dir);
@@ -309,6 +309,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	
 	?celdasTotalJugada(JugadaRight);
 	
+	//Devuelve la dirección que ha hecho más puntos, y los puntos que ah hecho
 	?comprobarDireccionLeftRight(JugadaLeft,JugadaRight,JugadaMax,Dir);
 	
 	-+directionCeldas(Dir);
@@ -382,7 +383,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!asignarCoordenadas(X,Y) : direction(Dir) & Dir="up"<-
 	-+cordX(X);
-	-+cordY(Y-1);
+	-+cordY(Y+1);
 .
 
 +!asignarCoordenadas(X,Y) : direction(Dir) & (Dir="down" | Dir="right")<-
@@ -391,7 +392,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 .
 
 +!asignarCoordenadas(X,Y) : direction(Dir) & Dir="left"<-
-	-+cordX(X-1);
+	-+cordX(X+1);
 	-+cordY(Y);
 .
 

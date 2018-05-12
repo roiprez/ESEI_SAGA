@@ -32,8 +32,8 @@ obstacles(3,5). // --- TODO --- Volver a poner obstaculos al nivel 3
 
 territorioInicial(5). //Territorio inicial asignado a cada jugador al comienzo del nivel 3 // --- TODO ---
 
-limitPoints(1,100). //Puntuacion a obtener para ganar un nivel
-limitPoints(2,200).
+limitPoints(1,0). //Puntuacion a obtener para ganar un nivel
+limitPoints(2,0).
 limitPoints(3,200).
 
 points(1,player1,0). //Puntuacion de cada jugador en cada nivel [ points(nivel,jugador,puntos) ]
