@@ -356,8 +356,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 //Si el n?mero de celdas que se consiguen es superior al anterior se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & celdasMax(Cmax) & celdasAct(Cact) & Cact > Cmax <-
-	.print("Cmax nuevo: ", Cact," en (",X,",",Y,")");
-	.print("Puntos: ", Puntos);
 	!asignarCoordenadas(X,Y);
 	-+celdasMax(Cact);
 	-+puntosMax(Puntos);
@@ -366,8 +364,6 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 //Si el n?mero de celdas es el mismo, pero el n?mero de puntos es mayor se actualizan los valores
 +!comprobarPuntos(X,Y) : nivel(3) & puntos(Puntos) & direction(Dir) & puntosMax(PuntosMax) & Puntos > PuntosMax & 
 		celdasMax(Cmax) & celdasAct(Cact) & Cact = Cmax <-
-	.print("Cmax invariable: ", Cact," en (",X,",",Y,")");
-	.print("Puntos: ", Puntos);
 	!asignarCoordenadas(X,Y);
 	-+puntosMax(Puntos);
 	-+dirMax(Dir).

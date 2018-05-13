@@ -239,7 +239,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 +!abolishExplotada <- 
 	.abolish(explotada(X,Y)).
 
-//Comprueba las consecuencias de un movimiento hacia abajo de la ficha en X,Y+1
+
 +!comprobarDown(X,Y) : tablero(celda(X,Y+1,OwnerDown),ficha(ColorDown,TipoDown)) & tablero(celda(X,Y,Owner),ficha(Color,Tipo))<-
 
 	-tablero(celda(X,Y+1,OwnerDown),ficha(ColorDown,TipoDown));
@@ -267,7 +267,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 	
 	?celdasTotalJugada(JugadaDown);
 	
-	//Devuelve la dirección que ha hecho más puntos, y los puntos que ah hecho
+	//Devuelve la dirección que ha hecho más puntos, y los puntos que ha hecho
 	?comprobarDireccionUpDown(JugadaUp,JugadaDown,JugadaMax,Dir);
 	
 	-+directionCeldas(Dir);
@@ -281,7 +281,7 @@ pattern3inLineH(Color,X,Y,StartsAtX,StartAtY) :-
 
 +!comprobarDown(X,Y).
 
-//Comprueba las consecuencias de un movimiento hacia la derecha de la ficha en X+1,Y
+
 +!comprobarRight(X,Y) : tablero(celda(X+1,Y,OwnerRight),ficha(ColorRight,TipoRight)) & tablero(celda(X,Y,Owner),ficha(Color,Tipo))<-
 
 	-tablero(celda(X+1,Y,OwnerRight),ficha(ColorRight,TipoRight));
